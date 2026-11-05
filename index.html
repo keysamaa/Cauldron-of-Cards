@@ -241,9 +241,9 @@
         }
 
         .card-footer-bar {
-            font-size: 9px !important;
-            line-height: 1.15 !important;
-            height: 18px;
+            font-size: 9px;
+            line-height: 1.2 !important;
+            min-height: 18px;
         }
 
         .book-columns-2 {
@@ -1836,10 +1836,15 @@
                             <div>
                                 <div class="flex items-center justify-between mb-1">
                                     <label class="block text-xs text-slate-400">Footer Left Text</label>
-                                    <button type="button" onclick="toggleDefaultField('footerSource')" id="pinBtn-footerSource" class="btn-press text-[11px] text-slate-500 hover:text-amber-300 flex items-center gap-1 transition" title="Save left footer text as default across all cards">
-                                        <i data-lucide="pin" class="w-3 h-3"></i>
-                                        <span class="pin-label">Set Default</span>
-                                    </button>
+                                    <div class="flex items-center gap-2">
+                                        <select id="fs-footerSource" onchange="renderCard()" class="px-1.5 py-0.5 rounded bg-[#080a0f] border border-slate-700 text-[10px] text-amber-300 font-semibold focus:border-amber-500 focus:outline-none" title="Footer Left Font Size">
+                                            <option value="1" selected>5</option>
+                                        </select>
+                                        <button type="button" onclick="toggleDefaultField('footerSource')" id="pinBtn-footerSource" class="btn-press text-[11px] text-slate-500 hover:text-amber-300 flex items-center gap-1 transition" title="Save left footer text as default across all cards">
+                                            <i data-lucide="pin" class="w-3 h-3"></i>
+                                            <span class="pin-label">Set Default</span>
+                                        </button>
+                                    </div>
                                 </div>
                                 <input type="text" id="footerSource" value="Cauldron of Cards • Homebrew" oninput="renderCard()" placeholder="e.g., Cauldron of Cards • Homebrew"
                                     class="w-full px-3 py-2 rounded-lg bg-[#0b0d13] border border-slate-700 text-slate-200 text-xs">
@@ -1847,10 +1852,15 @@
                             <div>
                                 <div class="flex items-center justify-between mb-1">
                                     <label class="block text-xs text-slate-400">Footer Right Text</label>
-                                    <button type="button" onclick="toggleDefaultField('footerCategoryInput')" id="pinBtn-footerCategoryInput" class="btn-press text-[11px] text-slate-500 hover:text-amber-300 flex items-center gap-1 transition" title="Save right footer text as default across all cards">
-                                        <i data-lucide="pin" class="w-3 h-3"></i>
-                                        <span class="pin-label">Set Default</span>
-                                    </button>
+                                    <div class="flex items-center gap-2">
+                                        <select id="fs-footerCategoryInput" onchange="renderCard()" class="px-1.5 py-0.5 rounded bg-[#080a0f] border border-slate-700 text-[10px] text-amber-300 font-semibold focus:border-amber-500 focus:outline-none" title="Footer Right Font Size">
+                                            <option value="1" selected>5</option>
+                                        </select>
+                                        <button type="button" onclick="toggleDefaultField('footerCategoryInput')" id="pinBtn-footerCategoryInput" class="btn-press text-[11px] text-slate-500 hover:text-amber-300 flex items-center gap-1 transition" title="Save right footer text as default across all cards">
+                                            <i data-lucide="pin" class="w-3 h-3"></i>
+                                            <span class="pin-label">Set Default</span>
+                                        </button>
+                                    </div>
                                 </div>
                                 <input type="text" id="footerCategoryInput" value="5E MAGIC ITEM" oninput="renderCard()" placeholder="e.g., 5E MAGIC ITEM"
                                     class="w-full px-3 py-2 rounded-lg bg-[#0b0d13] border border-slate-700 text-slate-200 text-xs">
@@ -2208,7 +2218,7 @@
                                 </div>
 
                                 <!-- BOTTOM TAPERED RULE & FOOTER METADATA -->
-                                <div id="mainCardFooterBar" class="card-footer-bar card-text-layer-above-art mt-auto pt-1 pb-0 border-t border-current/25 flex items-center justify-between gap-3 uppercase tracking-widest opacity-70 font-5e-sans shrink-0 whitespace-nowrap overflow-hidden relative">
+                                <div id="mainCardFooterBar" class="card-footer-bar card-text-layer-above-art mt-auto pt-1 pb-0 border-t border-current/25 flex items-center justify-between gap-3 tracking-widest opacity-70 font-5e-sans shrink-0 whitespace-nowrap overflow-hidden relative">
                                     <span id="previewFooterSource" class="truncate min-w-0 flex-1">Cauldron of Cards • Homebrew</span>
                                     <span id="previewFooterCategory" class="shrink-0">5E MAGIC ITEM</span>
                                 </div>
@@ -5636,13 +5646,19 @@
                 flavorContainer.style.display = 'none';
             }
 
-            // 9. Footer Source Watermark & Category Tag (Always same small size on all pages & size formats)
+            // 9. Footer Source Watermark & Category Tag (Preserves user casing & supports independent font sizes)
             const footerText = document.getElementById('footerSource').value.trim();
-            document.getElementById('previewFooterSource').textContent = footerText;
+            const footerLeftScale = getFieldScale('footerSource');
+            const previewFooterSourceEl = document.getElementById('previewFooterSource');
+            previewFooterSourceEl.textContent = footerText;
+            previewFooterSourceEl.style.fontSize = `calc(9px * ${footerLeftScale})`;
 
             const footerRightInput = document.getElementById('footerCategoryInput');
             const footerRightTag = footerRightInput ? footerRightInput.value.trim() : getDefaultFooterRightTag();
-            document.getElementById('previewFooterCategory').textContent = footerRightTag;
+            const footerRightScale = getFieldScale('footerCategoryInput');
+            const previewFooterCatEl = document.getElementById('previewFooterCategory');
+            previewFooterCatEl.textContent = footerRightTag;
+            previewFooterCatEl.style.fontSize = `calc(9px * ${footerRightScale})`;
 
             // 10. Corner Style & Column Spread
             const cornerStyle = document.getElementById('cardCornerStyle')?.value || 'sharp';
@@ -5661,6 +5677,8 @@
                 subtitleFontSize: previewSubEl.style.fontSize || '1.02rem',
                 descScale,
                 flavorScale,
+                footerLeftScale,
+                footerRightScale,
                 rConf,
                 badgeMode,
                 ruleColor,
@@ -6208,9 +6226,9 @@
                                 <p class="font-5e-body italic leading-snug text-center m-0" style="font-size: calc(15px * ${ctxData.flavorScale || 1});"></p>
                             </div>
                         </div>
-                        <div class="card-footer-bar mt-auto pt-1 pb-0 border-t flex items-center justify-between gap-3 uppercase tracking-widest opacity-70 font-5e-sans shrink-0 whitespace-nowrap overflow-hidden" style="border-top-color: ${ctxData.ruleColor}44;">
-                            <span class="truncate min-w-0 flex-1">${escapeHtmlText(ctxData.footerText)}</span>
-                            <span class="shrink-0 pr-5">${escapeHtmlText(ctxData.footerRightTag)}</span>
+                        <div class="card-footer-bar mt-auto pt-1 pb-0 border-t flex items-center justify-between gap-3 tracking-widest opacity-70 font-5e-sans shrink-0 whitespace-nowrap overflow-hidden" style="border-top-color: ${ctxData.ruleColor}44;">
+                            <span class="truncate min-w-0 flex-1" style="font-size: calc(9px * ${ctxData.footerLeftScale || 1});">${escapeHtmlText(ctxData.footerText)}</span>
+                            <span class="shrink-0 pr-5" style="font-size: calc(9px * ${ctxData.footerRightScale || 1});">${escapeHtmlText(ctxData.footerRightTag)}</span>
                         </div>
                     </div>
                     ${botBarHtml}
@@ -7009,7 +7027,9 @@
                 flavor: document.getElementById('itemFlavor').value,
                 flavorBoxStyle: document.getElementById('flavorBoxStyle').checked,
                 footerSource: document.getElementById('footerSource').value,
-                footerCategory: document.getElementById('footerCategoryInput')?.value ?? getDefaultFooterRightTag()
+                footerCategory: document.getElementById('footerCategoryInput')?.value ?? getDefaultFooterRightTag(),
+                fsFooterSource: document.getElementById('fs-footerSource')?.value || '1',
+                fsFooterCategory: document.getElementById('fs-footerCategoryInput')?.value || '1'
             };
 
             vault.unshift(itemData);
@@ -7115,6 +7135,12 @@
             document.getElementById('footerSource').value = p.footerSource !== undefined ? p.footerSource : 'Cauldron of Cards • Homebrew';
             if (document.getElementById('footerCategoryInput')) {
                 document.getElementById('footerCategoryInput').value = p.footerCategory !== undefined ? p.footerCategory : getDefaultFooterRightTag();
+            }
+            if (p.fsFooterSource && document.getElementById('fs-footerSource')) {
+                document.getElementById('fs-footerSource').value = p.fsFooterSource;
+            }
+            if (p.fsFooterCategory && document.getElementById('fs-footerCategoryInput')) {
+                document.getElementById('fs-footerCategoryInput').value = p.fsFooterCategory;
             }
 
             currentArtSource = p.artSource || '';
