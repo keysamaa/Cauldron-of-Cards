@@ -41,6 +41,11 @@
             --dmg-ink: #1E140A;
         }
 
+        html, body {
+            max-width: 100%;
+            overflow-x: hidden;
+        }
+
         body {
             font-family: 'Inter', sans-serif;
             background-color: #0b0d13;
@@ -56,8 +61,8 @@
             100% { opacity: 1; transform: scale(1) translateY(0); }
         }
         @keyframes cardPulse {
-            0% { transform: scale(0.985) translateY(4px); opacity: 0.88; }
-            100% { transform: scale(1) translateY(0); opacity: 1; }
+            0% { opacity: 0.78; filter: brightness(1.08); }
+            100% { opacity: 1; filter: brightness(1); }
         }
         @keyframes floatBob {
             0%, 100% { transform: translateY(0px); }
@@ -67,7 +72,7 @@
             animation: modalPop 0.28s cubic-bezier(0.22, 1, 0.36, 1) forwards;
         }
         .animate-card-Swap {
-            animation: cardPulse 0.26s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+            animation: cardPulse 0.24s cubic-bezier(0.22, 1, 0.36, 1);
         }
         .btn-press {
             transition: transform 0.18s cubic-bezier(0.22, 1, 0.36, 1), background-color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease, filter 0.2s ease;
@@ -3848,6 +3853,11 @@
         window.addEventListener('resize', () => {
             applyResponsivePreviewScale();
         });
+        if (window.visualViewport) {
+            window.visualViewport.addEventListener('resize', () => {
+                applyResponsivePreviewScale();
+            });
+        }
 
         // ==========================================
         // CAULDRON OF CARDS LANDING HUB, FLOATING BREW MODAL & CATEGORY SWITCHER
@@ -4582,17 +4592,35 @@
             const previewPanel = document.getElementById('mobilePreviewPanel');
             if (!previewPanel || previewPanel.classList.contains('hidden')) return;
 
-            const viewportW = document.documentElement.clientWidth || window.innerWidth;
-            const isMobileViewport = viewportW < 1024;
-            const panelW = previewPanel.clientWidth || viewportW;
-            // On mobile, adapt directly to the screen's side edges (with a small 12px total margin so card borders remain crisp)
-            const availW = isMobileViewport
-                ? Math.max(240, viewportW - 16)
-                : Math.max(300, Math.min(viewportW - 32, panelW - 16));
-
+            const backdropWrap = document.getElementById('previewBackdropWrap');
             const mainCard = document.getElementById('magicItemCard');
             const mainWrap = document.getElementById('mainCardScaleWrap');
+            const contWraps = Array.from(document.querySelectorAll('#continuationCardsContainer .cont-card-scale-wrap'));
+
+            // 1. Temporarily collapse scale wrappers so unscaled 520px/760px cards cannot inflate the parent container width
+            if (mainWrap) {
+                mainWrap.style.overflow = 'hidden';
+                mainWrap.style.width = '0px';
+            }
+            contWraps.forEach(wrap => {
+                wrap.style.overflow = 'hidden';
+                wrap.style.width = '0px';
+            });
+
+            // 2. Measure the true available container & viewport width
+            const visualW = window.visualViewport
+                ? window.visualViewport.width
+                : (document.documentElement.clientWidth || window.innerWidth);
+            const panelW = previewPanel.clientWidth || visualW;
+            const backdropW = backdropWrap ? (backdropWrap.clientWidth || panelW) : panelW;
+            const isMobileViewport = visualW < 1024;
+
+            const screenBoundW = visualW - (isMobileViewport ? 28 : 48);
+            const availW = Math.max(220, Math.floor(Math.min(screenBoundW, panelW - 4, backdropW - 4)));
+
+            // 3. Scale Main Card to fit cleanly inside availW
             if (mainCard && mainWrap) {
+                mainCard.classList.remove('animate-card-Swap');
                 mainCard.style.transform = 'none';
                 const cardW = mainCard.offsetWidth || getCanonicalCardWidth();
                 const cardH = mainCard.offsetHeight || 500;
@@ -4600,8 +4628,8 @@
                 if (scale < 0.999) {
                     mainCard.style.transformOrigin = 'top left';
                     mainCard.style.transform = `scale(${scale})`;
-                    mainWrap.style.width = `${Math.round(cardW * scale)}px`;
-                    mainWrap.style.height = `${Math.round(cardH * scale)}px`;
+                    mainWrap.style.width = `${(cardW * scale).toFixed(2)}px`;
+                    mainWrap.style.height = `${(cardH * scale).toFixed(2)}px`;
                 } else {
                     mainCard.style.transformOrigin = 'top left';
                     mainCard.style.transform = '';
@@ -4610,7 +4638,7 @@
                 }
             }
 
-            const contWraps = document.querySelectorAll('#continuationCardsContainer .cont-card-scale-wrap');
+            // 4. Scale Continuation & Card-Back Cards to fit cleanly inside availW
             contWraps.forEach(wrap => {
                 const card = wrap.querySelector('.homebrew-continuation-card');
                 if (!card) return;
@@ -4621,8 +4649,8 @@
                 if (scale < 0.999) {
                     card.style.transformOrigin = 'top left';
                     card.style.transform = `scale(${scale})`;
-                    wrap.style.width = `${Math.round(cW * scale)}px`;
-                    wrap.style.height = `${Math.round(cH * scale)}px`;
+                    wrap.style.width = `${(cW * scale).toFixed(2)}px`;
+                    wrap.style.height = `${(cH * scale).toFixed(2)}px`;
                 } else {
                     card.style.transformOrigin = 'top left';
                     card.style.transform = '';
@@ -5697,6 +5725,7 @@
             const cardEl = document.getElementById('magicItemCard');
             const contContainer = document.getElementById('continuationCardsContainer');
             const countBadge = document.getElementById('multiCardCountBadge');
+            const mainWrap = document.getElementById('mainCardScaleWrap');
 
             const fullArtWrap = document.getElementById('mainCardFullArtOnlyWrap');
             const topBodyWrap = document.getElementById('mainCardTopBodyWrap');
@@ -5719,6 +5748,10 @@
 
             // Temporarily clear any mobile preview CSS scale before measuring heights
             cardEl.style.transform = '';
+            if (mainWrap) {
+                mainWrap.style.width = '';
+                mainWrap.style.height = '';
+            }
 
             // Reset visibility from any prior pagination pass
             if (fullArtWrap) {
