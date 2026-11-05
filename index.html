@@ -894,9 +894,9 @@
     <!-- ==========================================
          FLOATING QUICK IMAGE PREVIEW OVERLAY
          ========================================== -->
-    <div id="quickPreviewOverlay" onclick="if(event.target.tagName !== 'IMG') closeQuickFloatingPreview()" class="fixed inset-0 z-40 hidden flex-col items-center justify-center p-4 overflow-y-auto">
-        <div class="w-full max-w-3xl flex flex-col items-center justify-center my-auto">
-            <div id="quickFloatingImageContainer" class="flex flex-wrap items-center justify-center gap-4 py-2"></div>
+    <div id="quickPreviewOverlay" onclick="if(event.target.tagName !== 'IMG') closeQuickFloatingPreview()" class="fixed inset-0 z-40 hidden flex-col items-center justify-start p-4 sm:p-6 overflow-y-auto overscroll-contain">
+        <div class="w-full max-w-3xl min-h-full flex flex-col items-center justify-center py-6">
+            <div id="quickFloatingImageContainer" class="w-full flex flex-col sm:flex-row flex-wrap items-center justify-center gap-5 py-2"></div>
         </div>
     </div>
 
@@ -1765,6 +1765,27 @@
                             </div>
                         </div>
 
+                        <!-- Card-Back Face Toggle & Rarity Style (Works on all card sizes) -->
+                        <div class="p-2.5 rounded-lg bg-[#0b0d13] border border-slate-800/90 space-y-2">
+                            <label class="flex items-center justify-between cursor-pointer select-none">
+                                <div>
+                                    <span class="text-xs font-bold text-amber-300 block">Include Card-Back Face</span>
+                                    <span class="text-[10px] text-slate-400">Generates a matching back card with full-size title & rarity emblem</span>
+                                </div>
+                                <input type="checkbox" id="includeCardBack" onchange="syncMiniLayoutControls('main'); renderCard()" class="w-4 h-4 accent-amber-500 rounded shrink-0 ml-2">
+                            </label>
+                            <div id="cardBackRarityOptionWrap" class="hidden pt-2 border-t border-slate-800/80 flex items-center justify-between gap-2">
+                                <label class="text-[11px] font-semibold text-slate-300">Card-Back Rarity Display:</label>
+                                <select id="cardBackRarityMode" onchange="syncMiniLayoutControls('main'); renderCard()" class="px-2.5 py-1.5 rounded-lg bg-[#121622] border border-slate-700 text-xs text-slate-200 focus:border-amber-500 focus:outline-none">
+                                    <option value="match" selected>Match Front Card</option>
+                                    <option value="emblem">Gem Only</option>
+                                    <option value="fulltext">Full Rarity Text</option>
+                                    <option value="both">Gem + Full Text</option>
+                                    <option value="none">Hidden (Title Only)</option>
+                                </select>
+                            </div>
+                        </div>
+
                         <!-- Multi-Card Split Toggle & Main Card Checklist (Active when a fixed size is selected) -->
                         <div id="multiCardOptionBox" class="hidden p-2.5 rounded-lg bg-amber-500/10 border border-amber-500/30 space-y-2.5">
                             <label class="flex items-center justify-between cursor-pointer select-none">
@@ -1800,16 +1821,6 @@
                                         <span>Full Image</span>
                                     </label>
                                 </div>
-                            </div>
-                            <div id="miniCardBackRarityWrap" class="hidden pt-2 border-t border-slate-800/80 flex items-center justify-between gap-2">
-                                <label class="text-[11px] font-semibold text-slate-300">Card-Back Rarity Style:</label>
-                                <select id="cardBackRarityMode" onchange="syncMiniLayoutControls('main'); renderCard()" class="px-2.5 py-1.5 rounded-lg bg-[#121622] border border-slate-700 text-xs text-slate-200 focus:border-amber-500 focus:outline-none">
-                                    <option value="match" selected>Match Front Card</option>
-                                    <option value="emblem">Gem Only</option>
-                                    <option value="fulltext">Full Rarity Text</option>
-                                    <option value="both">Gem + Full Text</option>
-                                    <option value="none">Hidden (Title Only)</option>
-                                </select>
                             </div>
                         </div>
 
@@ -3597,6 +3608,7 @@
             }
             overlay.classList.remove('hidden');
             overlay.classList.add('flex');
+            overlay.scrollTop = 0;
             requestAnimationFrame(() => {
                 overlay.classList.add('qp-open');
             });
@@ -3611,9 +3623,10 @@
 
             try {
                 const { dataUrls } = await generateAllCardsCanvases();
+                overlay.scrollTop = 0;
                 container.innerHTML = dataUrls.map((url, idx) => `
-                    <div class="flex flex-col items-center gap-1.5 animate-modal-pop">
-                        <img src="${url}" onclick="event.stopPropagation()" alt="Quick Card Preview ${idx + 1}" class="max-h-[82dvh] w-auto rounded-lg shadow-[0_20px_60px_rgba(0,0,0,0.75)] border border-white/10 select-all">
+                    <div class="flex flex-col items-center justify-center gap-1.5 animate-modal-pop max-w-full">
+                        <img src="${url}" onclick="event.stopPropagation()" alt="Quick Card Preview ${idx + 1}" class="max-w-[92vw] sm:max-w-full max-h-[80dvh] w-auto h-auto object-contain rounded-lg shadow-[0_20px_60px_rgba(0,0,0,0.75)] border border-white/10 select-all">
                     </div>
                 `).join('');
             } catch (e) {
@@ -4290,6 +4303,12 @@
             const depthX = Math.max(38, Math.round(w * 0.27));
             const safeClearY = Math.max(12, Math.round(h * 0.045));
             const safeClearX = Math.max(12, Math.round(w * 0.045));
+            // Extend non-faded edges well past the canvas bounds so blur() never rounds off or fades crisp corners
+            const outPad = Math.max(64, Math.round(Math.max(w, h) * 0.16));
+            const xMin = fadeLeft ? 0 : -outPad;
+            const xMax = fadeRight ? w : w + outPad;
+            const yMin = fadeTop ? 0 : -outPad;
+            const yMax = fadeBottom ? h : h + outPad;
 
             function traceWatercolorPolygon(targetCtx, insetScale, phaseSeed) {
                 const steps = 150;
@@ -4297,8 +4316,8 @@
 
                 for (let i = 0; i <= steps; i++) {
                     const t = i / steps;
-                    const x = t * w;
-                    let y = 0;
+                    const x = xMin + t * (xMax - xMin);
+                    let y = yMin;
                     if (fadeTop) {
                         y = safeClearY + depthY * insetScale * watercolorContourNoise(t, phaseSeed + 1.1);
                         if (fadeLeft && t < 0.18) y = Math.max(y, safeClearY + depthY * insetScale * (1 - t / 0.18) * 0.92);
@@ -4310,8 +4329,8 @@
 
                 for (let i = 0; i <= steps; i++) {
                     const t = i / steps;
-                    const y = t * h;
-                    let x = w;
+                    const y = yMin + t * (yMax - yMin);
+                    let x = xMax;
                     if (fadeRight) {
                         x = w - safeClearX - depthX * insetScale * watercolorContourNoise(t, phaseSeed + 2.7);
                     }
@@ -4320,8 +4339,8 @@
 
                 for (let i = steps; i >= 0; i--) {
                     const t = i / steps;
-                    const x = t * w;
-                    let y = h;
+                    const x = xMin + t * (xMax - xMin);
+                    let y = yMax;
                     if (fadeBottom) {
                         y = h - safeClearY - depthY * insetScale * watercolorContourNoise(t, phaseSeed + 4.3);
                         if (fadeLeft && t < 0.18) y = Math.min(y, h - safeClearY - depthY * insetScale * (1 - t / 0.18) * 0.92);
@@ -4332,8 +4351,8 @@
 
                 for (let i = steps; i >= 0; i--) {
                     const t = i / steps;
-                    const y = t * h;
-                    let x = 0;
+                    const y = yMin + t * (yMax - yMin);
+                    let x = xMin;
                     if (fadeLeft) {
                         x = safeClearX + depthX * insetScale * watercolorContourNoise(t, phaseSeed + 6.9);
                     }
@@ -5657,7 +5676,7 @@
         }
 
         function appendCardBackIfEnabled(ctxData, contContainer, spec) {
-            const includeBack = document.getElementById('includeCardBack')?.checked;
+            const includeBack = document.getElementById('includeCardBack')?.checked || document.getElementById('miniIncludeCardBack')?.checked;
             if (!includeBack) return;
 
             const cardEl = document.getElementById('magicItemCard');
@@ -6377,10 +6396,44 @@
                 const slotRect = areaEl.getBoundingClientRect();
                 if (slotRect.width < 2 || slotRect.height < 2) return null;
 
-                const relX = Math.round((slotRect.left - cardRect.left) * scaleOverride);
-                const relY = Math.round((slotRect.top - cardRect.top) * scaleOverride);
-                const w = Math.max(16, Math.round(slotRect.width * scaleOverride));
-                const h = Math.max(16, Math.round(slotRect.height * scaleOverride));
+                const cardW = Math.round(cardRect.width * scaleOverride);
+                const cardH = Math.round(cardRect.height * scaleOverride);
+                const isFullCardArt = areaEl.id === 'mainCardFullArtOnlyWrap';
+                const isFullBleed = isFullCardArt || !!document.getElementById('artFullBleed')?.checked;
+                const artLayout = document.getElementById('artLayout')?.value || 'none';
+
+                let relX = Math.round((slotRect.left - cardRect.left) * scaleOverride);
+                let relY = Math.round((slotRect.top - cardRect.top) * scaleOverride);
+                let w = Math.max(16, Math.round(slotRect.width * scaleOverride));
+                let h = Math.max(16, Math.round(slotRect.height * scaleOverride));
+
+                // Snap full-bleed slots flush to the card's outer edges so the card silhouette masks them 1:1
+                if (isFullCardArt) {
+                    relX = 0;
+                    relY = 0;
+                    w = cardW;
+                    h = cardH;
+                } else if (isFullBleed) {
+                    if (artLayout === 'banner-top') {
+                        h = Math.max(16, h + relY);
+                        relX = 0;
+                        relY = 0;
+                        w = cardW;
+                    } else if (artLayout === 'bottom-center' || areaEl.id === 'artBottomBleedSlot') {
+                        relX = 0;
+                        w = cardW;
+                        h = Math.max(16, cardH - relY);
+                    } else if (artLayout === 'side-left') {
+                        w = Math.max(16, w + relX);
+                        relX = 0;
+                        relY = 0;
+                        h = cardH;
+                    } else if (artLayout === 'side-right') {
+                        relY = 0;
+                        h = cardH;
+                        w = Math.max(16, cardW - relX);
+                    }
+                }
 
                 const c = document.createElement('canvas');
                 c.width = w;
@@ -6394,8 +6447,6 @@
                 const natH = imgEl.naturalHeight || imgEl.videoHeight || imgEl.height || h;
                 if (!natW || !natH) return null;
 
-                const isFullCardArt = areaEl.id === 'mainCardFullArtOnlyWrap';
-                const isFullBleed = isFullCardArt || !!document.getElementById('artFullBleed')?.checked;
                 const artScale = parseInt(document.getElementById('artScaleSlider')?.value, 10) || 100;
                 const artRotate = parseInt(document.getElementById('artRotateSlider')?.value, 10) || 0;
                 const artPosX = (parseInt(document.getElementById('artPosXSlider')?.value, 10) || 0) * scaleOverride;
@@ -6545,26 +6596,29 @@
             // 1. Capture Base Card (Background + Borders + Text)
             const baseCanvas = await renderDomNodeToCanvas(el, exactW, exactH, scaleOverride);
 
-            // 2. If there is a visible artwork slot (not Full-Card Art Only), capture Foreground Text-Only Layer on transparent background
+            // 2. If there is a visible artwork slot (not Full-Card Art Only), capture Foreground Text & Border Layer on transparent background
             let fgCanvas = null;
             const hasUnderTextSlot = maskedSlots.some(s => s.id !== 'mainCardFullArtOnlyWrap');
             if (hasUnderTextSlot) {
                 const origBg = el.style.background;
-                const origBorder = el.style.borderColor;
                 const origShadow = el.style.boxShadow;
+                const origBorderColor = el.style.borderColor;
                 const scribble = el.querySelector('#scribbleOverlay');
                 const origScribbleVis = scribble ? scribble.style.visibility : '';
+                const isFullBleed = !!document.getElementById('artFullBleed')?.checked;
 
                 el.style.setProperty('background', 'transparent', 'important');
-                el.style.setProperty('border-color', 'transparent', 'important');
                 el.style.setProperty('box-shadow', 'none', 'important');
+                if (isFullBleed) {
+                    el.style.setProperty('border-color', 'transparent', 'important');
+                }
                 if (scribble) scribble.style.visibility = 'hidden';
 
                 fgCanvas = await renderDomNodeToCanvas(el, exactW, exactH, scaleOverride);
 
                 el.style.background = origBg;
-                el.style.borderColor = origBorder;
                 el.style.boxShadow = origShadow;
+                el.style.borderColor = origBorderColor;
                 if (scribble) scribble.style.visibility = origScribbleVis;
             }
 
@@ -6583,6 +6637,24 @@
             return { el, baseCanvas, fgCanvas, maskedSlots, savedTransform, scaleOverride };
         }
 
+        function clipContextToCardCorners(ctx, w, h, scaleOverride) {
+            const cornerStyle = document.getElementById('cardCornerStyle')?.value || 'sharp';
+            const baseRadius = cornerStyle === 'rounded' ? 16 : 2;
+            const r = Math.min(baseRadius * scaleOverride, w / 2, h / 2);
+            ctx.beginPath();
+            if (typeof ctx.roundRect === 'function') {
+                ctx.roundRect(0, 0, w, h, r);
+            } else {
+                ctx.moveTo(r, 0);
+                ctx.arcTo(w, 0, w, h, r);
+                ctx.arcTo(w, h, 0, h, r);
+                ctx.arcTo(0, h, 0, 0, r);
+                ctx.arcTo(0, 0, w, 0, r);
+                ctx.closePath();
+            }
+            ctx.clip();
+        }
+
         function compositeCardFrameFromLayers(layerPack, frameSourceEl = null) {
             const { el, baseCanvas, fgCanvas, maskedSlots, scaleOverride } = layerPack;
             if (!maskedSlots || maskedSlots.length === 0) {
@@ -6594,7 +6666,13 @@
             outCanvas.height = baseCanvas.height;
             const outCtx = outCanvas.getContext('2d');
 
+            const isTransparentTheme = (currentTheme === 'cleardark' || currentTheme === 'clearlight');
+
             // Step 1: Draw Card Base
+            outCtx.save();
+            if (isTransparentTheme) {
+                clipContextToCardCorners(outCtx, outCanvas.width, outCanvas.height, scaleOverride);
+            }
             outCtx.drawImage(baseCanvas, 0, 0);
 
             const blendEl = document.getElementById('artBlendMultiply');
@@ -6615,7 +6693,7 @@
                 outCtx.drawImage(artPatch.canvas, artPatch.relX, artPatch.relY, artPatch.w, artPatch.h);
                 outCtx.restore();
 
-                // Step 3: Restore any Foreground Text / Bookend Borders that sit above the artwork fringes
+                // Step 3: Restore any Foreground Text that sits above the artwork fringes
                 if (fgCanvas && !artPatch.isFullCardArt) {
                     const textPatch = document.createElement('canvas');
                     textPatch.width = artPatch.w;
@@ -6634,6 +6712,14 @@
                 }
             }
 
+            // Step 4: Use the rendered card (baseCanvas) itself as the exact outer silhouette mask so full-bleed corners match the card edge 1:1
+            if (!isTransparentTheme) {
+                outCtx.globalCompositeOperation = 'destination-in';
+                outCtx.drawImage(baseCanvas, 0, 0);
+                outCtx.globalCompositeOperation = 'source-over';
+            }
+
+            outCtx.restore();
             el.style.transform = prevTransform;
             return outCanvas;
         }
@@ -6655,13 +6741,35 @@
 
             await ensureCustomImageLoaded();
             renderCard();
+
+            // Temporarily clear mobile wrapper scaling so DOM measurements and canvas snapshots happen at exact 1:1 canonical dimensions
+            const mainWrap = document.getElementById('mainCardScaleWrap');
+            const mainCard = document.getElementById('magicItemCard');
+            const contWraps = Array.from(document.querySelectorAll('#continuationCardsContainer .cont-card-scale-wrap'));
+            const contCards = Array.from(document.querySelectorAll('#continuationCardsContainer .homebrew-continuation-card'));
+
+            if (mainWrap) {
+                mainWrap.style.width = '';
+                mainWrap.style.height = '';
+                mainWrap.style.overflow = 'visible';
+            }
+            if (mainCard) {
+                mainCard.style.transform = 'none';
+            }
+            contWraps.forEach(w => {
+                w.style.width = '';
+                w.style.height = '';
+                w.style.overflow = 'visible';
+            });
+            contCards.forEach(c => {
+                c.style.transform = 'none';
+            });
+
             if (document.fonts && document.fonts.ready) {
                 try { await document.fonts.ready; } catch (_) {}
             }
             await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
 
-            const mainCard = document.getElementById('magicItemCard');
-            const contCards = Array.from(document.querySelectorAll('#continuationCardsContainer .homebrew-continuation-card'));
             const allCardElements = [mainCard, ...contCards];
 
             const canvases = [];
