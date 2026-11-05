@@ -6,8 +6,13 @@
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="theme-color" content="#0b0d13">
+    <meta property="og:type" content="rich">
+    <meta property="og:url" content="https://keysamaa.github.io/Cauldron-of-Cards/">
+    <meta name="theme-color" content="#2B2D31">
+    <meta property="og:description" content="***Cauldron of Cards***&#10;-# Stir thy pots, defy the gods&#10;&#10;A free web tool to create, customize, and export D&amp;D 5e homebrew cards with direct PNG or Discord Markdown export.">
     <title>Cauldron of Cards — Stir thy pots, defy the gods.</title>
+    <!-- Cauldron Emoji Favicon -->
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cdefs%3E%3CradialGradient id='cauldronBody' cx='38%25' cy='35%25' r='65%25'%3E%3Cstop offset='0%25' stop-color='%23475569'/%3E%3Cstop offset='55%25' stop-color='%231e293b'/%3E%3Cstop offset='100%25' stop-color='%230f172a'/%3E%3C/radialGradient%3E%3ClinearGradient id='brewGlow' x1='0%25' y1='0%25' x2='100%25' y2='0%25'%3E%3Cstop offset='0%25' stop-color='%23f59e0b'/%3E%3Cstop offset='50%25' stop-color='%23fde047'/%3E%3Cstop offset='100%25' stop-color='%23d97706'/%3E%3C/linearGradient%3E%3C/defs%3E%3Ccircle cx='38' cy='20' r='6' fill='%23fbbf24'/%3E%3Ccircle cx='56' cy='14' r='4.5' fill='%23fde047'/%3E%3Ccircle cx='66' cy='23' r='5.5' fill='%23f59e0b'/%3E%3Cpath d='M16 40 C10 40 8 54 18 54' fill='none' stroke='%2394a3b8' stroke-width='5' stroke-linecap='round'/%3E%3Cpath d='M84 40 C90 40 92 54 82 54' fill='none' stroke='%2394a3b8' stroke-width='5' stroke-linecap='round'/%3E%3Cpath d='M24 82 L18 94 M76 82 L82 94' stroke='%231e293b' stroke-width='7' stroke-linecap='round'/%3E%3Cpath d='M18 36 C14 66 24 88 50 88 C76 88 86 66 82 36 Z' fill='url(%23cauldronBody)' stroke='%23334155' stroke-width='3'/%3E%3Crect x='14' y='28' width='72' height='11' rx='5.5' fill='%23334155' stroke='%2364748b' stroke-width='2'/%3E%3Cellipse cx='50' cy='31' rx='30' ry='4.5' fill='url(%23brewGlow)'/%3E%3C/svg%3E">
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Google Fonts matching 5e Official Books -->
@@ -113,6 +118,34 @@
         }
         .animate-view-switch {
             animation: viewSlideIn 0.26s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+        }
+
+        /* Quick Floating Preview Backdrop Blur & Dim Transition */
+        #quickPreviewOverlay {
+            background-color: rgba(8, 10, 15, 0);
+            backdrop-filter: blur(0px);
+            -webkit-backdrop-filter: blur(0px);
+            opacity: 0;
+            transition: background-color 0.28s cubic-bezier(0.22, 1, 0.36, 1),
+                        backdrop-filter 0.28s cubic-bezier(0.22, 1, 0.36, 1),
+                        -webkit-backdrop-filter 0.28s cubic-bezier(0.22, 1, 0.36, 1),
+                        opacity 0.24s cubic-bezier(0.22, 1, 0.36, 1);
+        }
+        #quickPreviewOverlay.qp-open {
+            background-color: rgba(8, 10, 15, 0.42);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            opacity: 1;
+        }
+        #quickFloatingImageContainer {
+            transform: scale(0.94) translateY(10px);
+            opacity: 0;
+            transition: transform 0.28s cubic-bezier(0.22, 1, 0.36, 1),
+                        opacity 0.24s cubic-bezier(0.22, 1, 0.36, 1);
+        }
+        #quickPreviewOverlay.qp-open #quickFloatingImageContainer {
+            transform: scale(1) translateY(0);
+            opacity: 1;
         }
 
         /* Layering: Watercolor-masked Image Area sits right under Card Text layers */
@@ -762,9 +795,12 @@
          CAULDRON OF CARDS — OPENING LANDING HUB
          ========================================== -->
     <div id="landingHub" onclick="handleLandingHubClick(event)" class="intro-playing fixed inset-0 z-50 bg-[#080a0f] overflow-y-auto flex flex-col items-center justify-between p-4 sm:p-8 select-none">
-        <div class="max-w-5xl w-full my-auto py-4 space-y-6">
+        <!-- Subtle ambient radial glow behind the front page hero -->
+        <div class="pointer-events-none fixed inset-0 bg-[radial-gradient(circle_at_50%_32%,rgba(245,158,11,0.14)_0%,rgba(139,92,246,0.06)_36%,transparent_70%)]"></div>
+        <div class="max-w-5xl w-full my-auto py-4 space-y-6 relative z-10">
             <!-- Hero Title & Tagline (Animated dead-center first, then slides up) -->
-            <div class="landing-hero-box text-center space-y-3">
+            <div class="landing-hero-box relative text-center space-y-3">
+                <div class="pointer-events-none absolute -inset-x-10 -inset-y-8 bg-[radial-gradient(ellipse_at_center,rgba(245,158,11,0.20)_0%,rgba(217,119,6,0.07)_42%,transparent_72%)] blur-2xl -z-10"></div>
                 <div id="introTitleWrap" class="space-y-1">
                     <h1 class="font-5e-title text-3xl sm:text-5xl md:text-6xl font-black tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-amber-200 via-amber-400 to-amber-200 drop-shadow-[0_4px_24px_rgba(245,158,11,0.28)]">
                         Cauldron of Cards
@@ -852,18 +888,8 @@
     <!-- ==========================================
          FLOATING QUICK IMAGE PREVIEW OVERLAY
          ========================================== -->
-    <div id="quickPreviewOverlay" onclick="if(event.target === this) closeQuickFloatingPreview()" class="fixed inset-0 z-40 bg-black/80 backdrop-blur-md hidden flex-col items-center justify-center p-4 overflow-y-auto">
-        <div class="w-full max-w-3xl flex flex-col items-center gap-3 my-auto">
-            <div class="flex items-center justify-between w-full max-w-md px-3 py-1.5 rounded-full bg-[#121622]/90 border border-slate-700 text-xs text-slate-300">
-                <span class="font-semibold text-amber-300 flex items-center gap-1.5">
-                    <i data-lucide="eye" class="w-3.5 h-3.5"></i>
-                    <span>Quick Floating Preview</span>
-                </span>
-                <button type="button" onclick="closeQuickFloatingPreview()" class="text-slate-400 hover:text-white font-bold flex items-center gap-1">
-                    <span>Close</span>
-                    <i data-lucide="x" class="w-3.5 h-3.5"></i>
-                </button>
-            </div>
+    <div id="quickPreviewOverlay" onclick="if(event.target.tagName !== 'IMG') closeQuickFloatingPreview()" class="fixed inset-0 z-40 hidden flex-col items-center justify-center p-4 overflow-y-auto">
+        <div class="w-full max-w-3xl flex flex-col items-center justify-center my-auto">
             <div id="quickFloatingImageContainer" class="flex flex-wrap items-center justify-center gap-4 py-2"></div>
         </div>
     </div>
@@ -1122,33 +1148,40 @@
                         </div>
                     </div>
 
-                    <!-- MONSTER 6 ABILITY SCORES & COMBAT BLOCK (Shown only when category === 'monster') -->
+                    <!-- CREATURE 6 ABILITY SCORES & COMBAT BLOCK (Shown only when category === 'monster') -->
                     <div id="monsterStatsGridBox" class="hidden p-3.5 rounded-xl bg-[#0e1118] border border-red-900/40 space-y-3">
                         <div class="flex items-center justify-between">
-                            <span class="text-xs font-bold uppercase tracking-wider text-amber-400">Monster Manual Stat Block Fields</span>
-                            <span class="text-[10px] text-slate-400">Official 5e MM Format</span>
+                            <span class="text-xs font-bold uppercase tracking-wider text-amber-400">Creature Stat Block Fields</span>
+                            <span id="lblCreatureFormatTag" class="text-[10px] text-slate-400">Official 5e 2014 Format</span>
                         </div>
                         <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
                             <div>
                                 <div class="flex items-center justify-between mb-0.5">
-                                    <label class="block text-[11px] text-slate-400">Armor Class</label>
-                                    <select id="fs-monAC" onchange="renderCard()" class="px-1 py-0 rounded bg-[#080a0f] border border-slate-700 text-[9px] text-amber-300 font-semibold"><option value="0.82">XS</option><option value="0.91">S</option><option value="1" selected>M</option><option value="1.12">L</option><option value="1.25">XL</option></select>
+                                    <label class="block text-[11px] text-slate-400">Armor Class (AC)</label>
+                                    <select id="fs-monAC" onchange="renderCard()" class="px-1 py-0 rounded bg-[#080a0f] border border-slate-700 text-[9px] text-amber-300 font-semibold"><option value="1" selected>5</option></select>
                                 </div>
                                 <input type="text" id="monAC" value="17 (natural armor)" oninput="renderCard()" class="w-full px-2.5 py-1.5 rounded bg-[#080a0f] border border-slate-700 text-xs text-white">
                             </div>
                             <div>
                                 <div class="flex items-center justify-between mb-0.5">
-                                    <label class="block text-[11px] text-slate-400">Hit Points</label>
-                                    <select id="fs-monHP" onchange="renderCard()" class="px-1 py-0 rounded bg-[#080a0f] border border-slate-700 text-[9px] text-amber-300 font-semibold"><option value="0.82">XS</option><option value="0.91">S</option><option value="1" selected>M</option><option value="1.12">L</option><option value="1.25">XL</option></select>
+                                    <label class="block text-[11px] text-slate-400">Hit Points (HP)</label>
+                                    <select id="fs-monHP" onchange="renderCard()" class="px-1 py-0 rounded bg-[#080a0f] border border-slate-700 text-[9px] text-amber-300 font-semibold"><option value="1" selected>5</option></select>
                                 </div>
                                 <input type="text" id="monHP" value="136 (16d10 + 48)" oninput="renderCard()" class="w-full px-2.5 py-1.5 rounded bg-[#080a0f] border border-slate-700 text-xs text-white">
                             </div>
                             <div>
                                 <div class="flex items-center justify-between mb-0.5">
                                     <label class="block text-[11px] text-slate-400">Speed</label>
-                                    <select id="fs-monSpeed" onchange="renderCard()" class="px-1 py-0 rounded bg-[#080a0f] border border-slate-700 text-[9px] text-amber-300 font-semibold"><option value="0.82">XS</option><option value="0.91">S</option><option value="1" selected>M</option><option value="1.12">L</option><option value="1.25">XL</option></select>
+                                    <select id="fs-monSpeed" onchange="renderCard()" class="px-1 py-0 rounded bg-[#080a0f] border border-slate-700 text-[9px] text-amber-300 font-semibold"><option value="1" selected>5</option></select>
                                 </div>
                                 <input type="text" id="monSpeed" value="40 ft., fly 60 ft. (hover)" oninput="renderCard()" class="w-full px-2.5 py-1.5 rounded bg-[#080a0f] border border-slate-700 text-xs text-white">
+                            </div>
+                            <div id="monInitFieldWrap" class="hidden sm:col-span-3">
+                                <div class="flex items-center justify-between mb-0.5">
+                                    <label class="block text-[11px] text-amber-300/90">Initiative <span class="text-slate-500">(2024 Stat Block — leave blank to auto-calc from DEX)</span></label>
+                                    <select id="fs-monInit" onchange="renderCard()" class="px-1 py-0 rounded bg-[#080a0f] border border-slate-700 text-[9px] text-amber-300 font-semibold"><option value="1" selected>5</option></select>
+                                </div>
+                                <input type="text" id="monInit" value="" placeholder="e.g., +3 (13)" oninput="renderCard()" class="w-full px-2.5 py-1.5 rounded bg-[#080a0f] border border-slate-700 text-xs text-white">
                             </div>
                         </div>
                         <div class="grid grid-cols-3 sm:grid-cols-6 gap-2 text-center pt-1">
@@ -1181,45 +1214,66 @@
                             <div>
                                 <div class="flex items-center justify-between mb-0.5">
                                     <label class="block text-[11px] text-slate-400">Saving Throws <span class="text-slate-600">(opt)</span></label>
-                                    <select id="fs-monSaves" onchange="renderCard()" class="px-1 py-0 rounded bg-[#080a0f] border border-slate-700 text-[9px] text-amber-300 font-semibold"><option value="0.82">XS</option><option value="0.91">S</option><option value="1" selected>M</option><option value="1.12">L</option><option value="1.25">XL</option></select>
+                                    <select id="fs-monSaves" onchange="renderCard()" class="px-1 py-0 rounded bg-[#080a0f] border border-slate-700 text-[9px] text-amber-300 font-semibold"><option value="1" selected>5</option></select>
                                 </div>
                                 <input type="text" id="monSaves" value="Dex +7, Wis +6, Cha +8" oninput="renderCard()" class="w-full px-2.5 py-1.5 rounded bg-[#080a0f] border border-slate-700 text-xs text-white">
                             </div>
                             <div>
                                 <div class="flex items-center justify-between mb-0.5">
                                     <label class="block text-[11px] text-slate-400">Skills <span class="text-slate-600">(opt)</span></label>
-                                    <select id="fs-monSkills" onchange="renderCard()" class="px-1 py-0 rounded bg-[#080a0f] border border-slate-700 text-[9px] text-amber-300 font-semibold"><option value="0.82">XS</option><option value="0.91">S</option><option value="1" selected>M</option><option value="1.12">L</option><option value="1.25">XL</option></select>
+                                    <select id="fs-monSkills" onchange="renderCard()" class="px-1 py-0 rounded bg-[#080a0f] border border-slate-700 text-[9px] text-amber-300 font-semibold"><option value="1" selected>5</option></select>
                                 </div>
                                 <input type="text" id="monSkills" value="Perception +6, Stealth +7" oninput="renderCard()" class="w-full px-2.5 py-1.5 rounded bg-[#080a0f] border border-slate-700 text-xs text-white">
                             </div>
                             <div>
                                 <div class="flex items-center justify-between mb-0.5">
                                     <label class="block text-[11px] text-slate-400">Resistances / Immunities <span class="text-slate-600">(opt)</span></label>
-                                    <select id="fs-monResist" onchange="renderCard()" class="px-1 py-0 rounded bg-[#080a0f] border border-slate-700 text-[9px] text-amber-300 font-semibold"><option value="0.82">XS</option><option value="0.91">S</option><option value="1" selected>M</option><option value="1.12">L</option><option value="1.25">XL</option></select>
+                                    <select id="fs-monResist" onchange="renderCard()" class="px-1 py-0 rounded bg-[#080a0f] border border-slate-700 text-[9px] text-amber-300 font-semibold"><option value="1" selected>5</option></select>
                                 </div>
                                 <input type="text" id="monResist" value="psychic, radiant; charmed" oninput="renderCard()" class="w-full px-2.5 py-1.5 rounded bg-[#080a0f] border border-slate-700 text-xs text-white">
                             </div>
                             <div>
                                 <div class="flex items-center justify-between mb-0.5">
-                                    <label class="block text-[11px] text-slate-400">Senses</label>
-                                    <select id="fs-monSenses" onchange="renderCard()" class="px-1 py-0 rounded bg-[#080a0f] border border-slate-700 text-[9px] text-amber-300 font-semibold"><option value="0.82">XS</option><option value="0.91">S</option><option value="1" selected>M</option><option value="1.12">L</option><option value="1.25">XL</option></select>
+                                    <label class="block text-[11px] text-slate-400">Senses <span class="text-slate-600">(opt)</span></label>
+                                    <select id="fs-monSenses" onchange="renderCard()" class="px-1 py-0 rounded bg-[#080a0f] border border-slate-700 text-[9px] text-amber-300 font-semibold"><option value="1" selected>5</option></select>
                                 </div>
                                 <input type="text" id="monSenses" value="truesight 120 ft., passive Perception 16" oninput="renderCard()" class="w-full px-2.5 py-1.5 rounded bg-[#080a0f] border border-slate-700 text-xs text-white">
                             </div>
                             <div>
                                 <div class="flex items-center justify-between mb-0.5">
-                                    <label class="block text-[11px] text-slate-400">Languages</label>
-                                    <select id="fs-monLangs" onchange="renderCard()" class="px-1 py-0 rounded bg-[#080a0f] border border-slate-700 text-[9px] text-amber-300 font-semibold"><option value="0.82">XS</option><option value="0.91">S</option><option value="1" selected>M</option><option value="1.12">L</option><option value="1.25">XL</option></select>
+                                    <label class="block text-[11px] text-slate-400">Languages <span class="text-slate-600">(opt)</span></label>
+                                    <select id="fs-monLangs" onchange="renderCard()" class="px-1 py-0 rounded bg-[#080a0f] border border-slate-700 text-[9px] text-amber-300 font-semibold"><option value="1" selected>5</option></select>
                                 </div>
                                 <input type="text" id="monLangs" value="Deep Speech, telepathy 120 ft." oninput="renderCard()" class="w-full px-2.5 py-1.5 rounded bg-[#080a0f] border border-slate-700 text-xs text-white">
                             </div>
                             <div>
                                 <div class="flex items-center justify-between mb-0.5">
-                                    <label class="block text-[11px] text-slate-400">Challenge Rating & PB</label>
-                                    <select id="fs-monCR" onchange="renderCard()" class="px-1 py-0 rounded bg-[#080a0f] border border-slate-700 text-[9px] text-amber-300 font-semibold"><option value="0.82">XS</option><option value="0.91">S</option><option value="1" selected>M</option><option value="1.12">L</option><option value="1.25">XL</option></select>
+                                    <label class="block text-[11px] text-slate-400">Challenge Rating & PB <span class="text-slate-600">(opt)</span></label>
+                                    <select id="fs-monCR" onchange="renderCard()" class="px-1 py-0 rounded bg-[#080a0f] border border-slate-700 text-[9px] text-amber-300 font-semibold"><option value="1" selected>5</option></select>
                                 </div>
                                 <input type="text" id="monCR" value="9 (5,000 XP) • PB +4" oninput="renderCard()" class="w-full px-2.5 py-1.5 rounded bg-[#080a0f] border border-slate-700 text-xs text-white">
                             </div>
+                        </div>
+
+                        <!-- Creature Stat Block Custom Pills (Displayed under the stat block field on the card) -->
+                        <div class="pt-3 border-t border-slate-800/90 space-y-2.5">
+                            <div class="flex flex-wrap items-center justify-between gap-2">
+                                <label class="flex items-center gap-2 cursor-pointer select-none">
+                                    <input type="checkbox" id="showMonsterCustomPills" onchange="syncCustomPillsToggle('monster'); renderCard()" checked class="w-4 h-4 accent-amber-500 rounded">
+                                    <span class="text-xs font-semibold uppercase tracking-wider text-amber-400">Show Custom Pills (Under Stat Block)</span>
+                                </label>
+                                <div class="flex items-center gap-1.5">
+                                    <button type="button" onclick="removeStatPillSlot()" class="btn-press px-2 py-1 rounded bg-slate-800 hover:bg-red-950/60 text-slate-300 hover:text-red-300 border border-slate-700 text-[11px] font-semibold flex items-center gap-1" title="Remove 1 custom pill">
+                                        <i data-lucide="minus" class="w-3 h-3"></i>
+                                        <span>Remove Pill</span>
+                                    </button>
+                                    <button type="button" onclick="addStatPillSlot()" class="btn-press px-2 py-1 rounded bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/40 text-[11px] font-semibold flex items-center gap-1" title="Add 1 custom pill">
+                                        <i data-lucide="plus" class="w-3 h-3"></i>
+                                        <span>Add Pill</span>
+                                    </button>
+                                </div>
+                            </div>
+                            <div id="monsterCustomPillsEditorList" class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 empty:hidden"></div>
                         </div>
                     </div>
                 </div>
@@ -1328,7 +1382,7 @@
             </div>
 
             <!-- ACCORDION 3: CATEGORY TRAITS, METADATA BLOCK & CHARGES -->
-            <div class="bg-[#151822] border border-slate-800 rounded-xl overflow-hidden shadow-lg transition-all duration-200">
+            <div id="secStatsAccordionCard" class="bg-[#151822] border border-slate-800 rounded-xl overflow-hidden shadow-lg transition-all duration-200">
                 <button type="button" onclick="toggleSection('secStats')" class="btn-press w-full px-4 py-3.5 bg-[#10131b] flex items-center justify-between text-left">
                     <div class="flex items-center gap-2.5">
                         <i data-lucide="shield-alert" class="w-4 h-4 text-amber-400"></i>
@@ -1339,23 +1393,13 @@
 
                 <div id="wrap-secStats" class="accordion-grid-wrap">
                 <div id="secStats" class="accordion-grid-inner p-4 space-y-4 border-t border-slate-800/80">
-                    <!-- Quick Combat / Category Metadata Block -->
+                    <!-- Default Category Details Block -->
                     <div class="space-y-3">
                         <div class="flex flex-wrap items-center justify-between gap-2">
-                            <label class="flex items-center gap-2 cursor-pointer">
+                            <label class="flex items-center gap-2 cursor-pointer select-none">
                                 <input type="checkbox" id="showStatPills" onchange="renderCard()" checked class="w-5 h-5 accent-amber-500 rounded">
-                                <span id="lblShowCategoryBlock" class="text-xs font-semibold uppercase tracking-wider text-amber-400">Show Official Header Block</span>
+                                <span id="lblShowCategoryBlock" class="text-xs font-semibold uppercase tracking-wider text-amber-400">Show Default Details</span>
                             </label>
-                            <div id="pillCountControlBtns" class="flex items-center gap-1.5">
-                                <button type="button" onclick="removeStatPillSlot()" class="btn-press px-2 py-1 rounded bg-slate-800 hover:bg-red-950/60 text-slate-300 hover:text-red-300 border border-slate-700 text-[11px] font-semibold flex items-center gap-1" title="Remove 1 pill slot">
-                                    <i data-lucide="minus" class="w-3 h-3"></i>
-                                    <span>Remove Pill</span>
-                                </button>
-                                <button type="button" onclick="addStatPillSlot()" class="btn-press px-2 py-1 rounded bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/40 text-[11px] font-semibold flex items-center gap-1" title="Add 1 pill slot">
-                                    <i data-lucide="plus" class="w-3 h-3"></i>
-                                    <span>Add Pill</span>
-                                </button>
-                            </div>
                         </div>
                         <div id="coreStatPillsGrid" class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                             <div id="pillSlotWrap-1">
@@ -1409,7 +1453,26 @@
                                     class="w-full px-3 py-2 rounded-lg bg-[#0b0d13] border border-slate-700 text-slate-200">
                             </div>
                         </div>
-                        <!-- Dynamic Extra Pills Container (Added 1 at a time via + Add Pill) -->
+                    </div>
+
+                    <!-- Separate Additional Custom Pills Block (Independent from Default Details) -->
+                    <div class="space-y-2.5 pt-3 border-t border-slate-800">
+                        <div class="flex flex-wrap items-center justify-between gap-2">
+                            <label class="flex items-center gap-2 cursor-pointer select-none">
+                                <input type="checkbox" id="showCustomPills" onchange="syncCustomPillsToggle('main'); renderCard()" checked class="w-5 h-5 accent-amber-500 rounded">
+                                <span class="text-xs font-semibold uppercase tracking-wider text-amber-400">Show Additional Custom Pills</span>
+                            </label>
+                            <div id="pillCountControlBtns" class="flex items-center gap-1.5">
+                                <button type="button" onclick="removeStatPillSlot()" class="btn-press px-2 py-1 rounded bg-slate-800 hover:bg-red-950/60 text-slate-300 hover:text-red-300 border border-slate-700 text-[11px] font-semibold flex items-center gap-1" title="Remove 1 custom pill">
+                                    <i data-lucide="minus" class="w-3 h-3"></i>
+                                    <span>Remove Pill</span>
+                                </button>
+                                <button type="button" onclick="addStatPillSlot()" class="btn-press px-2 py-1 rounded bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/40 text-[11px] font-semibold flex items-center gap-1" title="Add 1 custom pill">
+                                    <i data-lucide="plus" class="w-3 h-3"></i>
+                                    <span>Add Pill</span>
+                                </button>
+                            </div>
+                        </div>
                         <div id="extraCustomPillsEditorList" class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 empty:hidden"></div>
                     </div>
 
@@ -1464,14 +1527,14 @@
 
                 <div id="wrap-secArt" class="accordion-grid-wrap">
                 <div id="secArt" class="accordion-grid-inner p-4 space-y-4 border-t border-slate-800/80">
-                    <!-- Custom Image Upload / URL (Supports PNG, JPG, WEBP, and Animated GIF) -->
+                    <!-- Custom Image Upload / URL -->
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                         <label class="btn-press flex items-center justify-center gap-2 px-3 py-2.5 rounded-lg bg-[#0b0d13] hover:bg-slate-900 border border-dashed border-slate-600 cursor-pointer text-xs text-slate-300 transition">
                             <i data-lucide="upload" class="w-4 h-4 text-amber-400"></i>
-                            <span>Upload Image / GIF</span>
-                            <input type="file" id="artUpload" accept="image/*,.gif" onchange="handleImageUpload(event)" class="hidden">
+                            <span>Upload Custom Image</span>
+                            <input type="file" id="artUpload" accept="image/png,image/jpeg,image/webp" onchange="handleImageUpload(event)" class="hidden">
                         </label>
-                        <input type="url" id="artUrl" oninput="handleImageUrl(this.value)" placeholder="Or paste image / GIF URL..." 
+                        <input type="url" id="artUrl" oninput="handleImageUrl(this.value)" placeholder="Or paste image URL..." 
                             class="px-3 py-2 rounded-lg bg-[#0b0d13] border border-slate-700 text-xs text-slate-200 focus:border-amber-500 focus:outline-none">
                     </div>
 
@@ -1792,7 +1855,7 @@
         <!-- ==========================================
              RIGHT PANEL: EXPORT & FULL CARD PREVIEW PAGE (7 Cols)
              ========================================== -->
-        <section id="mobilePreviewPanel" class="hidden lg:flex lg:col-span-7 xl:col-span-7 flex-col items-center">
+        <section id="mobilePreviewPanel" class="hidden lg:flex lg:col-span-7 xl:col-span-7 w-full min-w-0 max-w-full flex-col items-center">
 
             <!-- FULL EXPORT & SHARE TOOLBAR (Shown at top of Export Page) -->
             <div class="w-full max-w-[820px] mb-4 bg-[#151822] p-3.5 rounded-xl border border-amber-500/30 shadow-lg space-y-3">
@@ -1962,12 +2025,12 @@
             </div>
 
             <!-- RENDER TARGET WRAPPER (Holds Main Card + Any Multi-Card Continuation Cards) -->
-            <div id="previewBackdropWrap" class="w-full flex flex-col items-center gap-6 overflow-x-hidden py-1 transition-all">
+            <div id="previewBackdropWrap" class="w-full max-w-full flex flex-col items-center gap-6 overflow-x-hidden py-1 transition-all">
 
                 <!-- ====================================================
                      THE MAGIC ITEM / HOMEBREW CARD (Canonical dimensions preserved across all devices)
                      ==================================================== -->
-                <div id="mainCardScaleWrap" class="flex justify-center items-start shrink-0">
+                <div id="mainCardScaleWrap" class="relative block shrink-0 mx-auto">
                     <article id="magicItemCard" class="theme-parchment card-corners-sharp relative w-[520px] transition-colors duration-200 overflow-hidden select-text flex flex-col justify-between shrink-0">
                         <!-- TOP ORNATE 5E BOOKEND BORDER -->
                         <div id="topBookBorder" class="w-full h-2.5 bg-gradient-to-r from-[#8B6F36] via-[#E5C985] to-[#8B6F36] border-b border-[#58180D] shrink-0 relative z-20">
@@ -2059,20 +2122,17 @@
                                         <!-- OFFICIAL CATEGORY-SPECIFIC HEADER BLOCK -->
                                         <div id="previewCategoryStructuredBlock" class="hidden my-2.5"></div>
 
-                                        <!-- QUICK COMBAT / STAT PILLS ROW -->
+                                        <!-- DEFAULT COMBAT / STAT PILLS ROW -->
                                         <div id="previewStatsRow" class="flex flex-wrap items-center gap-1.5 my-2.5"></div>
 
-                                        <!-- MONSTER STAT BLOCK FULL OFFICIAL LAYOUT -->
+                                        <!-- CREATURE STAT BLOCK FULL OFFICIAL LAYOUT (Supports 2014 & 2024 Formats) -->
                                         <div id="previewMonsterAbilityBar" class="hidden my-2 space-y-2 text-[14.5px] leading-snug font-5e-body">
-                                            <div class="space-y-0.5">
-                                                <div><strong class="font-bold">Armor Class</strong> <span id="pMonAC">17 (natural armor)</span></div>
-                                                <div><strong class="font-bold">Hit Points</strong> <span id="pMonHP">136 (16d10 + 48)</span></div>
-                                                <div><strong class="font-bold">Speed</strong> <span id="pMonSpeed">40 ft., fly 60 ft. (hover)</span></div>
-                                            </div>
-                                            <svg class="w-full h-[5px]" preserveAspectRatio="none" viewBox="0 0 400 5">
+                                            <div id="pMonCombatTopBlock" class="space-y-0.5"></div>
+                                            <svg id="pMonRuleTop" class="w-full h-[5px]" preserveAspectRatio="none" viewBox="0 0 400 5">
                                                 <polygon class="mon-tapered-rule" points="0,0 400,2.5 0,5" fill="#922610"/>
                                             </svg>
-                                            <div class="py-1 px-1 grid grid-cols-6 gap-1 text-center font-5e-sans">
+                                            <!-- 2014 6-Column Horizontal Ability Row -->
+                                            <div id="pMonAbility2014Wrap" class="py-1 px-1 grid grid-cols-6 gap-1 text-center font-5e-sans">
                                                 <div><div class="text-[10px] font-extrabold uppercase opacity-80">STR</div><div id="pMonStr" class="text-xs font-semibold">18 (+4)</div></div>
                                                 <div><div class="text-[10px] font-extrabold uppercase opacity-80">DEX</div><div id="pMonDex" class="text-xs font-semibold">16 (+3)</div></div>
                                                 <div><div class="text-[10px] font-extrabold uppercase opacity-80">CON</div><div id="pMonCon" class="text-xs font-semibold">16 (+3)</div></div>
@@ -2080,14 +2140,19 @@
                                                 <div><div class="text-[10px] font-extrabold uppercase opacity-80">WIS</div><div id="pMonWis" class="text-xs font-semibold">15 (+2)</div></div>
                                                 <div><div class="text-[10px] font-extrabold uppercase opacity-80">CHA</div><div id="pMonCha" class="text-xs font-semibold">19 (+4)</div></div>
                                             </div>
-                                            <svg class="w-full h-[5px]" preserveAspectRatio="none" viewBox="0 0 400 5">
+                                            <!-- 2024 2-Column Ability Score, Modifier & Save Table -->
+                                            <div id="pMonAbility2024Wrap" class="hidden py-1 font-5e-sans"></div>
+                                            <svg id="pMonRuleMid" class="w-full h-[5px]" preserveAspectRatio="none" viewBox="0 0 400 5">
                                                 <polygon class="mon-tapered-rule" points="0,0 400,2.5 0,5" fill="#922610"/>
                                             </svg>
                                             <div id="pMonSecondaryBlock" class="space-y-0.5"></div>
-                                            <svg class="w-full h-[5px]" preserveAspectRatio="none" viewBox="0 0 400 5">
+                                            <svg id="pMonRuleBot" class="w-full h-[5px]" preserveAspectRatio="none" viewBox="0 0 400 5">
                                                 <polygon class="mon-tapered-rule" points="0,0 400,2.5 0,5" fill="#922610"/>
                                             </svg>
                                         </div>
+
+                                        <!-- SEPARATE CUSTOM PILLS ROW (Renders under Default Details / Creature Stat Block) -->
+                                        <div id="previewCustomPillsRow" class="hidden flex-wrap items-center gap-1.5 my-2.5"></div>
 
                                         <!-- VISUAL CHARGES TRACKER BAR -->
                                         <div id="previewChargesRow" class="my-2.5 py-2 px-3 rounded bg-black/[0.06] border border-current/20 flex flex-wrap items-center justify-between gap-2">
@@ -2394,7 +2459,7 @@
             { key: 'conditions', title: 'Conditions', icon: 'flame', desc: 'Custom status effects, afflictions, curses, hazards, and reference cards.' },
             { key: 'feat', title: 'Feat', icon: 'award', desc: 'General, Origin, Fighting Style, or Epic Boon feats with prerequisites & ASIs.' },
             { key: 'item', title: 'Item', icon: 'sword', desc: 'Weapons, armor, wondrous items, potions, charges, and gemstone rarity badges.' },
-            { key: 'monster', title: 'Monster / Stat Block', icon: 'skull', desc: 'Complete 5e creature stat blocks with AC, HP, 6 ability scores, CR, and actions.' },
+            { key: 'monster', title: 'Creature / Stat Block', icon: 'skull', desc: 'Complete 5e creature stat blocks (2014 & 2024 formats) with AC, HP, abilities, CR, and actions.' },
             { key: 'other', title: 'Other Features', icon: 'zap', desc: 'Fighting maneuvers, Eldritch Invocations, Artificer Infusions, and Metamagic.' },
             { key: 'race', title: 'Race / Species', icon: 'users', desc: 'Switch between D&D 2014 Race rules (with ASIs) or 2024 Species rules.' },
             { key: 'region', title: 'Region', icon: 'castle', desc: 'Cities, villages, taverns, buildings, dungeons, landmarks, and realms.' },
@@ -2650,7 +2715,7 @@
             },
             item: null, // Uses PRESETS.eclipse
             monster: {
-                label: "Monster / Stat Block",
+                label: "Creature / Stat Block",
                 footerTag: "5E CREATURE STAT BLOCK",
                 artKey: "dragon",
                 rarity: "legendary",
@@ -2833,8 +2898,6 @@
         let currentRuleEdition = '2014';
         let currentArtSource = '';
         let rawCustomImageSource = null;
-        let rawCustomGifBuffer = null;
-        let isAnimatedGifArt = false;
         let cachedRawImageEl = null;
         let cachedMaskCanvas = null;
         let cachedMaskKey = '';
@@ -2881,17 +2944,28 @@
             for (let i = 1; i <= 4; i++) {
                 const wrap = document.getElementById(`pillSlotWrap-${i}`);
                 if (wrap) {
-                    wrap.classList.toggle('hidden', i > activeCorePillSlots);
+                    wrap.classList.remove('hidden');
                 }
             }
             renderExtraCustomPillsEditor();
         }
 
+        function syncCustomPillsToggle(source) {
+            const mainChk = document.getElementById('showCustomPills');
+            const monChk = document.getElementById('showMonsterCustomPills');
+            if (!mainChk || !monChk) return;
+            if (source === 'monster') {
+                mainChk.checked = monChk.checked;
+            } else {
+                monChk.checked = mainChk.checked;
+            }
+        }
+
         function renderExtraCustomPillsEditor() {
             const listEl = document.getElementById('extraCustomPillsEditorList');
-            if (!listEl) return;
-            listEl.innerHTML = extraCustomPills.map((p, idx) => {
-                const num = 4 + idx + 1;
+            const monListEl = document.getElementById('monsterCustomPillsEditorList');
+            const html = extraCustomPills.map((p, idx) => {
+                const num = idx + 1;
                 const optsHtml = TEN_FONT_SIZE_OPTIONS.map(opt =>
                     `<option value="${opt.scale}" ${String(p.scale) === opt.scale ? 'selected' : ''}>Size ${opt.level}</option>`
                 ).join('');
@@ -2903,11 +2977,13 @@
                                 ${optsHtml}
                             </select>
                         </div>
-                        <input type="text" value="${escapeHtmlText(p.value)}" oninput="updateExtraPillValue(${idx}, this.value)" placeholder="Additional property or trait..."
-                            class="w-full px-3 py-2 rounded-lg bg-[#0b0d13] border border-slate-700 text-slate-200">
+                        <input type="text" value="${escapeHtmlText(p.value)}" oninput="updateExtraPillValue(${idx}, this.value)" placeholder="Custom pill text..."
+                            class="w-full px-3 py-2 rounded-lg bg-[#0b0d13] border border-slate-700 text-slate-200 text-xs">
                     </div>
                 `;
             }).join('');
+            if (listEl) listEl.innerHTML = html;
+            if (monListEl) monListEl.innerHTML = html;
         }
 
         function updateExtraPillValue(idx, val) {
@@ -2925,12 +3001,11 @@
         }
 
         function addStatPillSlot() {
-            document.getElementById('showStatPills').checked = true;
-            if (activeCorePillSlots < 4) {
-                activeCorePillSlots++;
-            } else {
-                extraCustomPills.push({ id: 'pill_' + Date.now(), value: 'New Trait', scale: 1 });
-            }
+            const mainChk = document.getElementById('showCustomPills');
+            const monChk = document.getElementById('showMonsterCustomPills');
+            if (mainChk) mainChk.checked = true;
+            if (monChk) monChk.checked = true;
+            extraCustomPills.push({ id: 'pill_' + Date.now(), value: 'New Trait', scale: 1 });
             updateCorePillSlotsVisibility();
             renderCard();
         }
@@ -2938,8 +3013,6 @@
         function removeStatPillSlot() {
             if (extraCustomPills.length > 0) {
                 extraCustomPills.pop();
-            } else if (activeCorePillSlots > 0) {
-                activeCorePillSlots--;
             }
             updateCorePillSlotsVisibility();
             renderCard();
@@ -3397,10 +3470,7 @@
 
             currentArtIsCustomImg = false;
             rawCustomImageSource = null;
-            rawCustomGifBuffer = null;
-            isAnimatedGifArt = false;
             currentArtSource = '';
-            updateDownloadButtonLabels();
 
             toggleAttuneInput();
         }
@@ -3450,6 +3520,7 @@
                     navExport.classList.add('ring-2', 'ring-amber-400');
                 }
                 renderCard();
+                requestAnimationFrame(() => applyResponsivePreviewScale());
                 window.scrollTo({ top: 0, behavior: 'smooth' });
             } else {
                 // Always collapse all option categories when returning to the Edit tab on mobile
@@ -3476,6 +3547,8 @@
         // ==========================================
         // QUICK FLOATING IMAGE PREVIEW OVERLAY
         // ==========================================
+        let quickPreviewCloseTimer = null;
+
         function setQuickPreviewButtonState(isOpen) {
             const btnText = document.getElementById('floatingPreviewBtnText');
             const btnIcon = document.getElementById('floatingPreviewBtnIcon');
@@ -3486,16 +3559,23 @@
 
         async function toggleQuickFloatingPreview() {
             const overlay = document.getElementById('quickPreviewOverlay');
-            if (!overlay.classList.contains('hidden')) {
+            if (!overlay.classList.contains('hidden') && overlay.classList.contains('qp-open')) {
                 closeQuickFloatingPreview();
                 return;
             }
+            if (quickPreviewCloseTimer) {
+                clearTimeout(quickPreviewCloseTimer);
+                quickPreviewCloseTimer = null;
+            }
             overlay.classList.remove('hidden');
             overlay.classList.add('flex');
+            requestAnimationFrame(() => {
+                overlay.classList.add('qp-open');
+            });
             setQuickPreviewButtonState(true);
 
             const container = document.getElementById('quickFloatingImageContainer');
-            container.innerHTML = `<div class="py-16 px-8 rounded-2xl bg-[#121622]/90 border border-amber-500/30 flex items-center gap-3 text-amber-200 text-sm shadow-2xl">
+            container.innerHTML = `<div class="py-12 px-7 rounded-2xl bg-[#121622]/90 border border-amber-500/30 flex items-center gap-3 text-amber-200 text-sm shadow-2xl">
                 <i data-lucide="loader-2" class="w-5 h-5 animate-spin text-amber-400"></i>
                 <span>stirring the pot...</span>
             </div>`;
@@ -3504,20 +3584,25 @@
             try {
                 const { dataUrls } = await generateAllCardsCanvases();
                 container.innerHTML = dataUrls.map((url, idx) => `
-                    <div class="flex flex-col items-center gap-1.5">
-                        <img src="${url}" alt="Quick Card Preview ${idx + 1}" class="max-h-[76dvh] w-auto rounded-lg shadow-[0_20px_60px_rgba(0,0,0,0.85)] border border-white/10 select-all">
+                    <div class="flex flex-col items-center gap-1.5 animate-modal-pop">
+                        <img src="${url}" onclick="event.stopPropagation()" alt="Quick Card Preview ${idx + 1}" class="max-h-[82dvh] w-auto rounded-lg shadow-[0_20px_60px_rgba(0,0,0,0.75)] border border-white/10 select-all">
                     </div>
                 `).join('');
             } catch (e) {
-                container.innerHTML = `<div class="p-6 rounded-xl bg-red-950/80 border border-red-500/40 text-red-200 text-xs">Unable to render image preview. Check external image CORS or use an uploaded image.</div>`;
+                container.innerHTML = `<div class="p-6 rounded-xl bg-red-950/80 border border-red-500/40 text-red-200 text-xs animate-modal-pop">Unable to render image preview. Check external image CORS or use an uploaded image.</div>`;
             }
         }
 
         function closeQuickFloatingPreview() {
             const overlay = document.getElementById('quickPreviewOverlay');
-            overlay.classList.add('hidden');
-            overlay.classList.remove('flex');
+            overlay.classList.remove('qp-open');
             setQuickPreviewButtonState(false);
+            if (quickPreviewCloseTimer) clearTimeout(quickPreviewCloseTimer);
+            quickPreviewCloseTimer = setTimeout(() => {
+                overlay.classList.add('hidden');
+                overlay.classList.remove('flex');
+                quickPreviewCloseTimer = null;
+            }, 260);
         }
 
         function toggleExportMiniLayout() {
@@ -3813,7 +3898,7 @@
             const monsterGridBox = document.getElementById('monsterStatsGridBox');
             const previewMonsterBar = document.getElementById('previewMonsterAbilityBar');
             const chargesEditorBlock = document.getElementById('chargesEditorBlock');
-            const secStatsWrap = document.getElementById('secStats')?.parentElement;
+            const secStatsCard = document.getElementById('secStatsAccordionCard');
             const extraField5Wrap = document.getElementById('extraField5Wrap');
 
             raceEditionBox.classList.add('hidden');
@@ -3833,18 +3918,18 @@
 
             // Layout hint per category
             const layoutHints = {
-                item: ['3. Item Properties & Charges', 'Show Item Stat Pills', 'DMG Item Pills'],
-                spell: ['3. Official Spell Casting Block', 'Show PHB Spell Header Block', 'PHB Spell Block'],
-                monster: ['3. Monster Combat & Senses', 'Show Monster Stat Block', 'MM Stat Block'],
-                class: ['3. Core Class Proficiencies Table', 'Show Core Class Traits Box', 'PHB Class Table'],
-                subclass: ['3. Subclass Progression Header', 'Show Subclass Overview Banner', 'PHB Subclass Header'],
-                race: ['3. Lineage & Species Traits Box', 'Show Official Lineage Summary', 'PHB Species Block'],
-                background: ['3. Background Proficiencies & Equipment', 'Show Official Background Block', 'PHB Background Block'],
-                feat: ['3. Feat Prerequisite & Benefits Callout', 'Show Feat Summary Callout', 'PHB Feat Callout'],
-                other: ['3. Invocation / Option Requirements', 'Show Option Mechanics Callout', 'Class Option Block'],
-                conditions: ['3. Condition Reference Summary', 'Show Condition Quick-Reference', 'Appendix A Condition'],
-                region: ['3. Gazetteer & Settlement Details', 'Show DMG Gazetteer Box', 'DMG Region Gazetteer'],
-                miscellaneous: ['3. Custom Trait Badges & Uses', 'Show Summary Badges', 'Custom Homebrew Block']
+                item: ['3. Item Properties & Charges', 'Show Default Item Pills', 'DMG Item Pills'],
+                spell: ['3. Official Spell Casting Block', 'Show Default Spell Header Block', 'PHB Spell Block'],
+                monster: ['3. Creature Combat & Senses', 'Show Creature Stat Block', 'MM Stat Block'],
+                class: ['3. Core Class Proficiencies Table', 'Show Default Class Traits Box', 'PHB Class Table'],
+                subclass: ['3. Subclass Progression Header', 'Show Default Subclass Banner', 'PHB Subclass Header'],
+                race: ['3. Lineage & Species Traits Box', 'Show Default Lineage Summary', 'PHB Species Block'],
+                background: ['3. Background Proficiencies & Equipment', 'Show Default Background Block', 'PHB Background Block'],
+                feat: ['3. Feat Prerequisite & Benefits Callout', 'Show Default Feat Callout', 'PHB Feat Callout'],
+                other: ['3. Invocation / Option Requirements', 'Show Default Option Callout', 'Class Option Block'],
+                conditions: ['3. Condition Reference Summary', 'Show Default Condition Summary', 'Appendix A Condition'],
+                region: ['3. Gazetteer & Settlement Details', 'Show Default Region Gazetteer', 'DMG Region Gazetteer'],
+                miscellaneous: ['3. Custom Trait Badges & Uses', 'Show Default Summary Badges', 'Custom Homebrew Block']
             };
             const [sec3Title, showLbl, hintTxt] = layoutHints[catKey] || layoutHints.miscellaneous;
             document.getElementById('sec3HeaderTitle').textContent = sec3Title;
@@ -3854,7 +3939,7 @@
             if (lblHint) lblHint.textContent = hintTxt;
 
             if (catKey === 'item') {
-                if (secStatsWrap) secStatsWrap.classList.remove('hidden');
+                if (secStatsCard) secStatsCard.classList.remove('hidden');
                 itemIdentity.classList.remove('hidden');
                 genericIdentity.classList.add('hidden');
                 document.getElementById('activeCategoryLabel').textContent = 'Item';
@@ -3894,9 +3979,10 @@
                 document.getElementById('statExtra5').value = tpl.extra5 || '';
             }
 
-            // Monster has its own dedicated Section 1 stat block editor, so hide redundant Section 3 pills
+            // Creature / Stat Block has all its fields & custom pills in Section 1, so hide Accordion 3 completely
             if (catKey === 'monster') {
-                if (secStatsWrap) secStatsWrap.classList.add('hidden');
+                if (secStatsCard) secStatsCard.classList.add('hidden');
+                raceEditionBox.classList.remove('hidden');
                 monsterGridBox.classList.remove('hidden');
                 previewMonsterBar.classList.remove('hidden');
                 document.getElementById('monStr').value = tpl.str;
@@ -3906,10 +3992,10 @@
                 document.getElementById('monWis').value = tpl.wis;
                 document.getElementById('monCha').value = tpl.cha;
             } else {
-                if (secStatsWrap) secStatsWrap.classList.remove('hidden');
+                if (secStatsCard) secStatsCard.classList.remove('hidden');
             }
 
-            // Both Race/Species AND Background support 2014 vs 2024 rules
+            // Race/Species, Background, AND Creature / Stat Block support 2014 vs 2024 rules
             if (catKey === 'race' || catKey === 'background') {
                 raceEditionBox.classList.remove('hidden');
                 document.getElementById('itemRarity').value = tpl.rarity.toLowerCase();
@@ -3936,6 +4022,10 @@
             document.getElementById('itemDesc').value = tpl.desc;
             document.getElementById('itemFlavor').value = tpl.flavor;
 
+            if (catKey === 'monster') {
+                setRuleEdition('2014');
+            }
+
             selectBuiltinArt(tpl.artKey, false);
             applyPinnedDefaults();
             renderCard();
@@ -3949,6 +4039,34 @@
             const lbl14 = document.getElementById('lblBtn2014');
             const lbl24 = document.getElementById('lblBtn2024');
             const hint = document.getElementById('raceEditionHint');
+
+            if (edition === '2024') {
+                btn24.className = "btn-press py-2 px-3 rounded-lg text-xs font-bold bg-amber-500/25 text-amber-300 border border-amber-500/50 transition inline-flex items-center justify-center gap-1.5";
+                btn14.className = "btn-press py-2 px-3 rounded-lg text-xs font-bold bg-slate-900/80 text-slate-400 border border-slate-800 transition inline-flex items-center justify-center gap-1.5";
+            } else {
+                btn14.className = "btn-press py-2 px-3 rounded-lg text-xs font-bold bg-amber-500/25 text-amber-300 border border-amber-500/50 transition inline-flex items-center justify-center gap-1.5";
+                btn24.className = "btn-press py-2 px-3 rounded-lg text-xs font-bold bg-slate-900/80 text-slate-400 border border-slate-800 transition inline-flex items-center justify-center gap-1.5";
+            }
+
+            if (currentCategory === 'monster') {
+                if (lbl14) lbl14.textContent = "2014 Stat Block";
+                if (lbl24) lbl24.textContent = "2024 Stat Block";
+                if (hint) {
+                    hint.textContent = edition === '2024'
+                        ? "2024 MM (AC + Initiative, Mod/Save Table)"
+                        : "2014 MM (Classic 6-Ability Row & Saves)";
+                }
+                const fmtTag = document.getElementById('lblCreatureFormatTag');
+                if (fmtTag) {
+                    fmtTag.textContent = edition === '2024' ? "Official 5e 2024 Format" : "Official 5e 2014 Format";
+                }
+                const initWrap = document.getElementById('monInitFieldWrap');
+                if (initWrap) {
+                    initWrap.classList.toggle('hidden', edition !== '2024');
+                }
+                renderCard();
+                return;
+            }
 
             const isBackground = currentCategory === 'background';
             const tpl = isBackground ? CATEGORY_TEMPLATES.background : CATEGORY_TEMPLATES.race;
@@ -3966,14 +4084,6 @@
                 hint.textContent = edition === '2024'
                     ? "2024 Species (ASIs in Background)"
                     : "2014 Race (Includes ASIs & Age)";
-            }
-
-            if (edition === '2024') {
-                btn24.className = "btn-press py-2 px-3 rounded-lg text-xs font-bold bg-amber-500/25 text-amber-300 border border-amber-500/50 transition inline-flex items-center justify-center gap-1.5";
-                btn14.className = "btn-press py-2 px-3 rounded-lg text-xs font-bold bg-slate-900/80 text-slate-400 border border-slate-800 transition inline-flex items-center justify-center gap-1.5";
-            } else {
-                btn14.className = "btn-press py-2 px-3 rounded-lg text-xs font-bold bg-amber-500/25 text-amber-300 border border-amber-500/50 transition inline-flex items-center justify-center gap-1.5";
-                btn24.className = "btn-press py-2 px-3 rounded-lg text-xs font-bold bg-slate-900/80 text-slate-400 border border-slate-800 transition inline-flex items-center justify-center gap-1.5";
             }
 
             if (data.pillLabels) {
@@ -4015,26 +4125,48 @@
             if (shouldRender) renderCard();
         }
 
-        function updateDownloadButtonLabels() {
-            const lbl = document.getElementById('lblDownloadMain');
-            if (lbl) {
-                lbl.textContent = (currentArtIsCustomImg && isAnimatedGifArt) ? 'Download GIF' : 'Download PNG';
+        const TRANSPARENT_1PX = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7';
+
+        function arrayBufferToDataUrl(buffer, mimeType = 'image/png') {
+            const bytes = new Uint8Array(buffer);
+            let binary = '';
+            const chunkSize = 0x8000;
+            for (let i = 0; i < bytes.length; i += chunkSize) {
+                binary += String.fromCharCode.apply(null, bytes.subarray(i, i + chunkSize));
             }
+            return `data:${mimeType};base64,${btoa(binary)}`;
+        }
+
+        async function fetchExternalImageAsSafeBuffer(url) {
+            const candidates = [
+                url,
+                `https://wsrv.nl/?url=${encodeURIComponent(url)}&output=png`,
+                `https://corsproxy.io/?${encodeURIComponent(url)}`
+            ];
+            for (const candidateUrl of candidates) {
+                try {
+                    const resp = await fetch(candidateUrl, { mode: 'cors' });
+                    if (!resp.ok) continue;
+                    const contentType = resp.headers.get('content-type') || 'image/png';
+                    const buf = await resp.arrayBuffer();
+                    if (buf && buf.byteLength > 32) {
+                        return {
+                            buffer: buf,
+                            mimeType: contentType.split(';')[0] || 'image/png'
+                        };
+                    }
+                } catch (_) {}
+            }
+            return null;
         }
 
         function handleImageUpload(event) {
             const file = event.target.files[0];
             if (!file) return;
-            isAnimatedGifArt = (file.type === 'image/gif') || /\.gif$/i.test(file.name || '');
-
-            if (isAnimatedGifArt) {
-                const bufReader = new FileReader();
-                bufReader.onload = function(be) {
-                    rawCustomGifBuffer = be.target.result;
-                };
-                bufReader.readAsArrayBuffer(file);
-            } else {
-                rawCustomGifBuffer = null;
+            if (file.type === 'image/gif' || /\.gif$/i.test(file.name || '')) {
+                showToast("Static Images Only", "Please upload a PNG, JPG, or WEBP image.");
+                event.target.value = '';
+                return;
             }
 
             const reader = new FileReader();
@@ -4044,52 +4176,52 @@
                 cachedRawImageEl = null;
                 cachedMaskKey = '';
                 currentArtIsCustomImg = true;
-                updateDownloadButtonLabels();
                 const layoutEl = document.getElementById('artLayout');
                 if (layoutEl && layoutEl.value === 'none') {
                     layoutEl.value = 'banner-top';
                     syncMiniLayoutControls('main');
                 }
                 processCustomArtFade();
-                showToast(isAnimatedGifArt ? "Animated GIF Applied" : "Custom Art Applied", isAnimatedGifArt ? "Card will export as an animated GIF!" : "Illustration added to card.");
+                showToast("Custom Art Applied", "Illustration added to card.");
             };
             reader.readAsDataURL(file);
         }
 
-        function handleImageUrl(url) {
+        async function handleImageUrl(url) {
             if (!url.trim()) {
                 currentArtIsCustomImg = false;
                 rawCustomImageSource = null;
-                rawCustomGifBuffer = null;
-                isAnimatedGifArt = false;
                 cachedRawImageEl = null;
                 cachedMaskKey = '';
                 currentArtSource = '';
-                updateDownloadButtonLabels();
                 renderCard();
                 return;
             }
             const cleanUrl = url.trim();
             rawCustomImageSource = cleanUrl;
             currentArtSource = cleanUrl;
-            isAnimatedGifArt = /^data:image\/gif/i.test(cleanUrl) || /\.gif(\?|#|$)/i.test(cleanUrl);
-            rawCustomGifBuffer = null;
-            if (isAnimatedGifArt) {
-                fetch(cleanUrl, { mode: 'cors' })
-                    .then(r => r.arrayBuffer())
-                    .then(buf => { rawCustomGifBuffer = buf; })
-                    .catch(() => {});
-            }
             cachedRawImageEl = null;
             cachedMaskKey = '';
             currentArtIsCustomImg = true;
-            updateDownloadButtonLabels();
+
             const layoutEl = document.getElementById('artLayout');
             if (layoutEl && layoutEl.value === 'none') {
                 layoutEl.value = 'banner-top';
                 syncMiniLayoutControls('main');
             }
             processCustomArtFade();
+
+            // Convert external URLs into a local CORS-clean data URL so exports never fail with CORS errors
+            if (!cleanUrl.startsWith('data:')) {
+                const fetched = await fetchExternalImageAsSafeBuffer(cleanUrl);
+                if (fetched && document.getElementById('artUrl')?.value.trim() === cleanUrl) {
+                    const safeDataUrl = arrayBufferToDataUrl(fetched.buffer, fetched.mimeType);
+                    rawCustomImageSource = safeDataUrl;
+                    currentArtSource = safeDataUrl;
+                    cachedRawImageEl = null;
+                    processCustomArtFade();
+                }
+            }
         }
 
         function buildWatercolorMaskCanvas(w, h, fadeTop, fadeBottom, fadeLeft, fadeRight) {
@@ -4450,7 +4582,14 @@
             const previewPanel = document.getElementById('mobilePreviewPanel');
             if (!previewPanel || previewPanel.classList.contains('hidden')) return;
 
-            const availW = Math.max(280, (previewPanel.clientWidth || window.innerWidth) - 16);
+            const viewportW = document.documentElement.clientWidth || window.innerWidth;
+            const isMobileViewport = viewportW < 1024;
+            const panelW = previewPanel.clientWidth || viewportW;
+            // On mobile, adapt directly to the screen's side edges (with a small 12px total margin so card borders remain crisp)
+            const availW = isMobileViewport
+                ? Math.max(240, viewportW - 16)
+                : Math.max(300, Math.min(viewportW - 32, panelW - 16));
+
             const mainCard = document.getElementById('magicItemCard');
             const mainWrap = document.getElementById('mainCardScaleWrap');
             if (mainCard && mainWrap) {
@@ -4459,11 +4598,12 @@
                 const cardH = mainCard.offsetHeight || 500;
                 const scale = cardW > availW ? (availW / cardW) : 1;
                 if (scale < 0.999) {
-                    mainCard.style.transformOrigin = 'top center';
+                    mainCard.style.transformOrigin = 'top left';
                     mainCard.style.transform = `scale(${scale})`;
                     mainWrap.style.width = `${Math.round(cardW * scale)}px`;
                     mainWrap.style.height = `${Math.round(cardH * scale)}px`;
                 } else {
+                    mainCard.style.transformOrigin = 'top left';
                     mainCard.style.transform = '';
                     mainWrap.style.width = `${cardW}px`;
                     mainWrap.style.height = `${cardH}px`;
@@ -4479,11 +4619,12 @@
                 const cH = card.offsetHeight || 500;
                 const scale = cW > availW ? (availW / cW) : 1;
                 if (scale < 0.999) {
-                    card.style.transformOrigin = 'top center';
+                    card.style.transformOrigin = 'top left';
                     card.style.transform = `scale(${scale})`;
                     wrap.style.width = `${Math.round(cW * scale)}px`;
                     wrap.style.height = `${Math.round(cH * scale)}px`;
                 } else {
+                    card.style.transformOrigin = 'top left';
                     card.style.transform = '';
                     wrap.style.width = `${cW}px`;
                     wrap.style.height = `${cH}px`;
@@ -4763,24 +4904,27 @@
                     subtitleText += ` (${iSub})`;
                     subtitleHtml += ` (${escapeHtmlText(iSub)})`;
                 }
-                subtitleText += `, ${rarityKey}`;
-                subtitleHtml += `, ${escapeHtmlText(rarityKey)}`;
+                subtitleText += `, ${rConf.label.toLowerCase()}`;
+                subtitleHtml += `, ${escapeHtmlText(rConf.label.toLowerCase())}`;
+
                 if (reqAtt) {
-                    const attStr = attTxt ? `(requires attunement ${attTxt})` : `(requires attunement)`;
+                    const attStr = attTxt ? `(requires attunement ${attTxt})` : '(requires attunement)';
                     subtitleText += ` ${attStr}`;
-                    subtitleHtml += ` <span style="font-size:${attScale}em;">${escapeHtmlText(attStr)}</span>`;
+                    const relAttScale = (attScale / (subScale || 1)).toFixed(3);
+                    subtitleHtml += ` <span style="font-size: ${relAttScale}em;">${escapeHtmlText(attStr)}</span>`;
                 }
-                previewSubEl.style.fontSize = `calc(1.02rem * ${subScale})`;
                 previewSubEl.innerHTML = subtitleHtml;
+                previewSubEl.style.fontSize = `calc(1.02rem * ${subScale})`;
             } else {
+                const customSub = document.getElementById('customSubtitleInput').value.trim();
                 const customSubScale = getFieldScale('customSubtitleInput');
-                subtitleText = document.getElementById('customSubtitleInput').value.trim() || CATEGORY_TEMPLATES[currentCategory]?.label || 'Homebrew';
+                subtitleText = customSub || (CATEGORY_TEMPLATES[currentCategory]?.subtitle || '');
                 subtitleHtml = escapeHtmlText(subtitleText);
+                previewSubEl.innerHTML = subtitleHtml;
                 previewSubEl.style.fontSize = `calc(1.02rem * ${customSubScale})`;
-                previewSubEl.textContent = subtitleText;
             }
 
-            // 3. Gemstone Rarity Badge & Theme-Matched Tapered Rule Color
+            // 3. Rarity Emblem / Full Text Badge & Theme-Matched Divider Line Color
             const badgeMode = document.getElementById('rarityBadgeMode').value || 'emblem';
             const badgeContainer = document.getElementById('rarityBadgeContainer');
             const emblemHolder = document.getElementById('rarityEmblemHolder');
@@ -4790,19 +4934,24 @@
                 badgeContainer.classList.add('hidden');
             } else {
                 badgeContainer.classList.remove('hidden');
-                emblemHolder.innerHTML = rConf.svg;
-                emblemHolder.classList.toggle('hidden', badgeMode === 'fulltext');
-                fullTextPill.textContent = rConf.label;
-                fullTextPill.style.backgroundColor = rConf.color;
-                fullTextPill.classList.toggle('hidden', badgeMode === 'emblem');
+                const showGem = badgeMode === 'emblem' || badgeMode === 'both';
+                const showText = badgeMode === 'fulltext' || badgeMode === 'both';
+
+                emblemHolder.classList.toggle('hidden', !showGem);
+                if (showGem) {
+                    emblemHolder.innerHTML = rConf.svg;
+                }
+
+                fullTextPill.classList.toggle('hidden', !showText);
+                if (showText) {
+                    fullTextPill.textContent = rConf.label;
+                    fullTextPill.style.backgroundColor = rConf.color;
+                }
             }
 
             const ruleColorMap = {
                 parchment: '#922610',
-                cleardark: '#922610',
-                clearlight: '#F6D88C',
-                discord: rConf.discordHex,
-                scribble: '#5C3E22',
+                scribble: '#6E4F2F',
                 osr: '#111111',
                 scroll: '#7C1D1D',
                 alchemist: '#784F27',
@@ -4810,16 +4959,16 @@
                 pirate: '#7F1D1D',
                 potionlabel: '#0F5132',
                 desert: '#1D4ED8',
-                bardic: '#7E22CE',
+                bardic: '#9333EA',
                 royaldecree: '#7E22CE',
-                tarot: '#C9AD6A',
-                feywild: '#2E6F4E',
+                tarot: '#D4AF37',
+                feywild: '#2E6F40',
                 frost: '#0284C7',
                 astral: '#A855F7',
-                stained: '#F59E0B',
+                stained: '#FBBF24',
                 celestial: '#D97706',
                 draconic: '#F59E0B',
-                sakura: '#E11D48',
+                sakura: '#F43F5E',
                 jungle: '#4ADE80',
                 crystal: '#22D3EE',
                 spelljammer: '#F59E0B',
@@ -4837,39 +4986,40 @@
                 witchbrew: '#A3E635',
                 kawaii: '#F472B6',
                 sticky: '#CA8A04',
-                receipt: '#262626',
+                receipt: '#525252',
                 crayon: '#EF4444',
                 comic: '#DC2626',
                 tavernmenu: '#FDE047',
                 cardboard: '#4A2C11',
                 ransom: '#DC2626',
-                milkcarton: '#2563EB',
+                milkcarton: '#DC2626',
                 newspaper: '#222222',
+                discord: rConf.discordHex,
                 blueprint: '#38BDF8',
-                index: '#3B82F6',
+                index: '#EF4444',
                 terminal: '#22C55E',
                 tcg: '#38BDF8',
-                steampunk: '#D97706',
+                steampunk: '#F59E0B',
                 synthwave: '#EC4899',
-                vaporwave: '#9333EA'
+                vaporwave: '#9333EA',
+                cleardark: '#922610',
+                clearlight: '#F6D88C'
             };
-            const styleObj = STYLE_CATALOG.find(s => s.id === currentTheme);
-            const ruleColor = ruleColorMap[currentTheme] || (styleObj ? styleObj.border : '#922610');
-            document.getElementById('taperedRule1').setAttribute('fill', ruleColor);
+            const ruleColor = ruleColorMap[currentTheme] || '#922610';
+            const taperedPoly = document.getElementById('taperedRule1');
+            if (taperedPoly) taperedPoly.setAttribute('fill', ruleColor);
 
-            const chargesRowEl = document.getElementById('previewChargesRow');
-            if (chargesRowEl) {
-                chargesRowEl.style.borderColor = `${ruleColor}44`;
-            }
             const mainFooterEl = document.getElementById('mainCardFooterBar');
             if (mainFooterEl) {
                 mainFooterEl.style.borderTopColor = `${ruleColor}44`;
             }
 
-            // 4. Category-Specific Official Book Layouts vs. Item Stat Pills
+            // 4. Category-Specific Official Book Layouts vs. Default Stat Pills & Separate Custom Pills
             const statsRow = document.getElementById('previewStatsRow');
+            const customPillsRow = document.getElementById('previewCustomPillsRow');
             const structuredBlock = document.getElementById('previewCategoryStructuredBlock');
             const showPills = document.getElementById('showStatPills').checked;
+            const showCustomPills = document.getElementById('showCustomPills')?.checked !== false;
 
             // Helper to strip redundant prefix if user typed "Speed: 30 ft." inside the Speed box
             function cleanFieldVal(val, labelText) {
@@ -4909,32 +5059,35 @@
                 { val: v2, scale: s2, idx: 2 },
                 { val: v3, scale: s3, idx: 3 },
                 { val: v4, scale: s4, idx: 4 }
-            ].filter(item => item.idx <= activeCorePillSlots && Boolean(item.val));
+            ].filter(item => Boolean(item.val));
 
             const extraPillCandidates = extraCustomPills
                 .filter(p => p.value && p.value.trim())
                 .map(p => ({ val: p.value.trim(), scale: p.scale || 1 }));
 
-            const pillItems = [...baseCandidates, ...extraPillCandidates];
-
             statsRow.classList.add('hidden');
             statsRow.innerHTML = '';
             structuredBlock.classList.add('hidden');
             structuredBlock.innerHTML = '';
+            if (customPillsRow) {
+                customPillsRow.classList.add('hidden');
+                customPillsRow.classList.remove('flex');
+                customPillsRow.innerHTML = '';
+            }
 
             if (currentCategory === 'monster') {
-                // Monster uses its own full Monster Manual block (#previewMonsterAbilityBar)
+                // Creature uses its own full stat block (#previewMonsterAbilityBar)
             } else if (currentCategory === 'item' || currentCategory === 'miscellaneous') {
-                if (showPills && pillItems.length > 0) {
+                if (showPills && baseCandidates.length > 0) {
                     statsRow.classList.remove('hidden');
-                    statsRow.innerHTML = pillItems.map(p => `<span class="stat-pill inline-flex items-center justify-center px-2.5 py-1 rounded font-semibold font-5e-sans" style="font-size: calc(0.75rem * ${p.scale});">${escapeHtmlText(p.val)}</span>`).join('');
+                    statsRow.innerHTML = baseCandidates.map(p => `<span class="stat-pill inline-flex items-center justify-center px-2.5 py-1 rounded font-semibold font-5e-sans" style="font-size: calc(0.75rem * ${p.scale});">${escapeHtmlText(p.val)}</span>`).join('');
                 }
-            } else if (showPills && (pillItems.length > 0 || v5)) {
+            } else if (showPills && (baseCandidates.length > 0 || v5)) {
                 structuredBlock.classList.remove('hidden');
-                const sv1 = activeCorePillSlots >= 1 ? v1 : '';
-                const sv2 = activeCorePillSlots >= 2 ? v2 : '';
-                const sv3 = activeCorePillSlots >= 3 ? v3 : '';
-                const sv4 = activeCorePillSlots >= 4 ? v4 : '';
+                const sv1 = v1;
+                const sv2 = v2;
+                const sv3 = v3;
+                const sv4 = v4;
 
                 if (currentCategory === 'spell') {
                     // Official 5e PHB Spell Block (Stacked Bold Labels + Thin Rule)
@@ -5004,36 +5157,122 @@
                         </div>
                     `;
                 }
-
-                // If user added extra custom pills on a non-item category, render them cleanly right underneath the structured block
-                if (extraPillCandidates.length > 0) {
-                    statsRow.classList.remove('hidden');
-                    statsRow.innerHTML = extraPillCandidates.map(p => `<span class="stat-pill inline-flex items-center justify-center px-2.5 py-1 rounded font-semibold font-5e-sans" style="font-size: calc(0.75rem * ${p.scale});">${escapeHtmlText(p.val)}</span>`).join('');
-                }
             }
 
-            // 5. Monster Full Stat Block (AC, HP, Speed, 6 Scores, Saves, Skills, Resistances, Senses, Languages, CR)
+            // Render Separate Additional Custom Pills (if enabled and non-empty)
+            if (showCustomPills && extraPillCandidates.length > 0 && customPillsRow) {
+                customPillsRow.classList.remove('hidden');
+                customPillsRow.classList.add('flex');
+                customPillsRow.innerHTML = extraPillCandidates.map(p => `<span class="stat-pill inline-flex items-center justify-center px-2.5 py-1 rounded font-semibold font-5e-sans" style="font-size: calc(0.75rem * ${p.scale});">${escapeHtmlText(p.val)}</span>`).join('');
+            }
+
+            // 5. Creature / Stat Block Full Official Layout (Supports 2014 & 2024 Formats; hides empty combat/senses blocks)
             const monsterBar = document.getElementById('previewMonsterAbilityBar');
             if (currentCategory === 'monster') {
-                monsterBar.classList.remove('hidden');
-                const pMonACEl = document.getElementById('pMonAC');
-                const pMonHPEl = document.getElementById('pMonHP');
-                const pMonSpeedEl = document.getElementById('pMonSpeed');
-                pMonACEl.textContent = document.getElementById('monAC')?.value || '17 (natural armor)';
-                pMonHPEl.textContent = document.getElementById('monHP')?.value || '136 (16d10 + 48)';
-                pMonSpeedEl.textContent = document.getElementById('monSpeed')?.value || '40 ft.';
-                if (pMonACEl.parentElement) pMonACEl.parentElement.style.fontSize = `calc(14.5px * ${getFieldScale('monAC')})`;
-                if (pMonHPEl.parentElement) pMonHPEl.parentElement.style.fontSize = `calc(14.5px * ${getFieldScale('monHP')})`;
-                if (pMonSpeedEl.parentElement) pMonSpeedEl.parentElement.style.fontSize = `calc(14.5px * ${getFieldScale('monSpeed')})`;
+                const is2024 = currentRuleEdition === '2024';
+                const acVal = (document.getElementById('monAC')?.value || '').trim();
+                const hpVal = (document.getElementById('monHP')?.value || '').trim();
+                const speedVal = (document.getElementById('monSpeed')?.value || '').trim();
+                const initCustom = (document.getElementById('monInit')?.value || '').trim();
 
-                document.getElementById('pMonStr').textContent = formatAbilityMod(document.getElementById('monStr').value);
-                document.getElementById('pMonDex').textContent = formatAbilityMod(document.getElementById('monDex').value);
-                document.getElementById('pMonCon').textContent = formatAbilityMod(document.getElementById('monCon').value);
-                document.getElementById('pMonInt').textContent = formatAbilityMod(document.getElementById('monInt').value);
-                document.getElementById('pMonWis').textContent = formatAbilityMod(document.getElementById('monWis').value);
-                document.getElementById('pMonCha').textContent = formatAbilityMod(document.getElementById('monCha').value);
+                const strScore = parseInt(document.getElementById('monStr').value, 10) || 10;
+                const dexScore = parseInt(document.getElementById('monDex').value, 10) || 10;
+                const conScore = parseInt(document.getElementById('monCon').value, 10) || 10;
+                const intScore = parseInt(document.getElementById('monInt').value, 10) || 10;
+                const wisScore = parseInt(document.getElementById('monWis').value, 10) || 10;
+                const chaScore = parseInt(document.getElementById('monCha').value, 10) || 10;
 
-                const saves = document.getElementById('monSaves')?.value.trim();
+                const dexModNum = Math.floor((dexScore - 10) / 2);
+                const autoInitStr = `${dexModNum >= 0 ? '+' + dexModNum : dexModNum} (${10 + dexModNum})`;
+                const effectiveInit = initCustom || autoInitStr;
+
+                // Top Combat Block (AC, HP, Speed, plus Initiative in 2024)
+                const combatTopEl = document.getElementById('pMonCombatTopBlock');
+                const ruleTopEl = document.getElementById('pMonRuleTop');
+                const combatLines = [];
+                if (is2024) {
+                    if (acVal || initCustom) {
+                        combatLines.push(`<div class="flex items-center justify-between gap-2" style="font-size: calc(14.5px * ${getFieldScale('monAC')});"><span><strong class="font-bold">AC</strong> ${escapeHtmlText(acVal || '10')}</span><span><strong class="font-bold">Initiative</strong> ${escapeHtmlText(effectiveInit)}</span></div>`);
+                    }
+                    if (hpVal) {
+                        combatLines.push(`<div style="font-size: calc(14.5px * ${getFieldScale('monHP')});"><strong class="font-bold">HP</strong> ${escapeHtmlText(hpVal)}</div>`);
+                    }
+                    if (speedVal) {
+                        combatLines.push(`<div style="font-size: calc(14.5px * ${getFieldScale('monSpeed')});"><strong class="font-bold">Speed</strong> ${escapeHtmlText(speedVal)}</div>`);
+                    }
+                } else {
+                    if (acVal) combatLines.push(`<div style="font-size: calc(14.5px * ${getFieldScale('monAC')});"><strong class="font-bold">Armor Class</strong> ${escapeHtmlText(acVal)}</div>`);
+                    if (hpVal) combatLines.push(`<div style="font-size: calc(14.5px * ${getFieldScale('monHP')});"><strong class="font-bold">Hit Points</strong> ${escapeHtmlText(hpVal)}</div>`);
+                    if (speedVal) combatLines.push(`<div style="font-size: calc(14.5px * ${getFieldScale('monSpeed')});"><strong class="font-bold">Speed</strong> ${escapeHtmlText(speedVal)}</div>`);
+                }
+
+                if (combatTopEl) {
+                    combatTopEl.innerHTML = combatLines.join('');
+                    combatTopEl.classList.toggle('hidden', combatLines.length === 0);
+                }
+                if (ruleTopEl) {
+                    ruleTopEl.classList.toggle('hidden', combatLines.length === 0);
+                }
+
+                // Ability Score Table (2014 Horizontal 6-Col vs 2024 2-Column Score/Mod/Save Table)
+                const wrap2014 = document.getElementById('pMonAbility2014Wrap');
+                const wrap2024 = document.getElementById('pMonAbility2024Wrap');
+                const savesRaw = (document.getElementById('monSaves')?.value || '').trim();
+
+                if (is2024) {
+                    if (wrap2014) wrap2014.classList.add('hidden');
+                    if (wrap2024) {
+                        wrap2024.classList.remove('hidden');
+                        // Parse custom saves like "Dex +7, Wis +6, Cha +8" so 2024 table shows exact Save bonus
+                        const saveOverrides = {};
+                        savesRaw.split(',').forEach(part => {
+                            const m = part.trim().match(/^(str|dex|con|int|wis|cha)[a-z]*\s*([+-]\d+)/i);
+                            if (m) saveOverrides[m[1].toUpperCase()] = m[2];
+                        });
+                        function build2024AbilCell(abbr, score) {
+                            const mod = Math.floor((score - 10) / 2);
+                            const modStr = mod >= 0 ? `+${mod}` : `${mod}`;
+                            const saveStr = saveOverrides[abbr] || modStr;
+                            return `
+                                <div class="grid grid-cols-4 items-center text-center py-0.5 px-1.5 rounded bg-black/[0.04] border border-current/15 text-xs">
+                                    <span class="font-extrabold uppercase text-left">${abbr}</span>
+                                    <span class="font-semibold">${score}</span>
+                                    <span class="opacity-90">${modStr}</span>
+                                    <span class="font-bold">${saveStr}</span>
+                                </div>
+                            `;
+                        }
+                        wrap2024.innerHTML = `
+                            <div class="grid grid-cols-2 gap-x-2.5 gap-y-1">
+                                <div class="grid grid-cols-4 text-[9px] font-bold uppercase tracking-wider opacity-70 px-1.5 text-center">
+                                    <span class="text-left">Ability</span><span>Score</span><span>Mod</span><span>Save</span>
+                                </div>
+                                <div class="grid grid-cols-4 text-[9px] font-bold uppercase tracking-wider opacity-70 px-1.5 text-center">
+                                    <span class="text-left">Ability</span><span>Score</span><span>Mod</span><span>Save</span>
+                                </div>
+                                ${build2024AbilCell('STR', strScore)}
+                                ${build2024AbilCell('INT', intScore)}
+                                ${build2024AbilCell('DEX', dexScore)}
+                                ${build2024AbilCell('WIS', wisScore)}
+                                ${build2024AbilCell('CON', conScore)}
+                                ${build2024AbilCell('CHA', chaScore)}
+                            </div>
+                        `;
+                    }
+                } else {
+                    if (wrap2024) wrap2024.classList.add('hidden');
+                    if (wrap2014) {
+                        wrap2014.classList.remove('hidden');
+                        document.getElementById('pMonStr').textContent = formatAbilityMod(strScore);
+                        document.getElementById('pMonDex').textContent = formatAbilityMod(dexScore);
+                        document.getElementById('pMonCon').textContent = formatAbilityMod(conScore);
+                        document.getElementById('pMonInt').textContent = formatAbilityMod(intScore);
+                        document.getElementById('pMonWis').textContent = formatAbilityMod(wisScore);
+                        document.getElementById('pMonCha').textContent = formatAbilityMod(chaScore);
+                    }
+                }
+
+                // Secondary Traits & Senses Block (Automatically hidden if empty!)
                 const skills = document.getElementById('monSkills')?.value.trim();
                 const resist = document.getElementById('monResist')?.value.trim();
                 const senses = document.getElementById('monSenses')?.value.trim();
@@ -5041,14 +5280,26 @@
                 const cr = document.getElementById('monCR')?.value.trim();
 
                 const secLines = [];
-                if (saves) secLines.push(`<div style="font-size: calc(14.5px * ${getFieldScale('monSaves')});"><strong class="font-bold">Saving Throws</strong> ${escapeHtmlText(saves)}</div>`);
+                if (!is2024 && savesRaw) {
+                    secLines.push(`<div style="font-size: calc(14.5px * ${getFieldScale('monSaves')});"><strong class="font-bold">Saving Throws</strong> ${escapeHtmlText(savesRaw)}</div>`);
+                }
                 if (skills) secLines.push(`<div style="font-size: calc(14.5px * ${getFieldScale('monSkills')});"><strong class="font-bold">Skills</strong> ${escapeHtmlText(skills)}</div>`);
-                if (resist) secLines.push(`<div style="font-size: calc(14.5px * ${getFieldScale('monResist')});"><strong class="font-bold">Damage Resistances/Immunities</strong> ${escapeHtmlText(resist)}</div>`);
+                if (resist) secLines.push(`<div style="font-size: calc(14.5px * ${getFieldScale('monResist')});"><strong class="font-bold">${is2024 ? 'Immunities / Resistances' : 'Damage Resistances/Immunities'}</strong> ${escapeHtmlText(resist)}</div>`);
                 if (senses) secLines.push(`<div style="font-size: calc(14.5px * ${getFieldScale('monSenses')});"><strong class="font-bold">Senses</strong> ${escapeHtmlText(senses)}</div>`);
                 if (langs) secLines.push(`<div style="font-size: calc(14.5px * ${getFieldScale('monLangs')});"><strong class="font-bold">Languages</strong> ${escapeHtmlText(langs)}</div>`);
-                if (cr) secLines.push(`<div style="font-size: calc(14.5px * ${getFieldScale('monCR')});"><strong class="font-bold">Challenge</strong> ${escapeHtmlText(cr)}</div>`);
-                document.getElementById('pMonSecondaryBlock').innerHTML = secLines.join('');
+                if (cr) secLines.push(`<div style="font-size: calc(14.5px * ${getFieldScale('monCR')});"><strong class="font-bold">${is2024 ? 'CR' : 'Challenge'}</strong> ${escapeHtmlText(cr)}</div>`);
 
+                const secBlockEl = document.getElementById('pMonSecondaryBlock');
+                const ruleBotEl = document.getElementById('pMonRuleBot');
+                if (secBlockEl) {
+                    secBlockEl.innerHTML = secLines.join('');
+                    secBlockEl.classList.toggle('hidden', secLines.length === 0);
+                }
+                if (ruleBotEl) {
+                    ruleBotEl.classList.toggle('hidden', secLines.length === 0);
+                }
+
+                monsterBar.classList.remove('hidden');
                 document.querySelectorAll('.mon-tapered-rule').forEach(poly => poly.setAttribute('fill', ruleColor));
             } else {
                 monsterBar.classList.add('hidden');
@@ -5367,7 +5618,7 @@
             const cornerClass = ctxData.cornerStyle === 'rounded' ? 'card-corners-rounded' : 'card-corners-sharp';
 
             const scaleWrap = document.createElement('div');
-            scaleWrap.className = 'cont-card-scale-wrap flex justify-center items-start shrink-0';
+            scaleWrap.className = 'cont-card-scale-wrap relative block shrink-0 mx-auto';
 
             const backCard = document.createElement('article');
             backCard.className = `homebrew-continuation-card theme-${currentTheme} ${cornerClass} relative transition-colors duration-200 overflow-hidden select-text flex flex-col justify-between shrink-0`;
@@ -5810,7 +6061,7 @@
 
             while (pendingFullHeader || pendingSubtitle || pendingDetails || queue.length > 0 || flavorOnContinuation) {
                 const scaleWrap = document.createElement('div');
-                scaleWrap.className = 'cont-card-scale-wrap flex justify-center items-start shrink-0';
+                scaleWrap.className = 'cont-card-scale-wrap relative block shrink-0 mx-auto';
 
                 const contCard = document.createElement('article');
                 contCard.className = `homebrew-continuation-card theme-${currentTheme} ${cornerClass} relative transition-colors duration-200 overflow-hidden select-text flex flex-col justify-between shrink-0`;
@@ -5971,19 +6222,33 @@
                 const hp = document.getElementById('monHP')?.value.trim();
                 const spd = document.getElementById('monSpeed')?.value.trim();
                 const cr = document.getElementById('monCR')?.value.trim();
-                detailsBlock += `**AC:** ${ac} • **HP:** ${hp} • **Speed:** ${spd}${cr ? ` • **CR:** ${cr}` : ''}\n`;
+                const topParts = [];
+                if (ac) topParts.push(`**AC:** ${ac}`);
+                if (hp) topParts.push(`**HP:** ${hp}`);
+                if (spd) topParts.push(`**Speed:** ${spd}`);
+                if (cr) topParts.push(`**CR:** ${cr}`);
+                if (topParts.length > 0) {
+                    detailsBlock += `${topParts.join(' • ')}\n`;
+                }
                 detailsBlock += `\`STR ${formatAbilityMod(document.getElementById('monStr').value)}\` \`DEX ${formatAbilityMod(document.getElementById('monDex').value)}\` \`CON ${formatAbilityMod(document.getElementById('monCon').value)}\` \`INT ${formatAbilityMod(document.getElementById('monInt').value)}\` \`WIS ${formatAbilityMod(document.getElementById('monWis').value)}\` \`CHA ${formatAbilityMod(document.getElementById('monCha').value)}\`\n`;
+                const showCustomPills = document.getElementById('showCustomPills')?.checked !== false;
+                const extraPills = showCustomPills ? extraCustomPills.map(p => (p.value || '').trim()).filter(Boolean) : [];
+                if (extraPills.length > 0) {
+                    detailsBlock += `\`${extraPills.join('` • `')}\`\n`;
+                }
             } else {
-                const basePills = [
-                    activeCorePillSlots >= 1 ? document.getElementById('statPrimary').value.trim() : '',
-                    activeCorePillSlots >= 2 ? document.getElementById('statSecondary').value.trim() : '',
-                    activeCorePillSlots >= 3 ? document.getElementById('statProps').value.trim() : '',
-                    activeCorePillSlots >= 4 ? document.getElementById('statWeightVal').value.trim() : ''
-                ].filter(Boolean);
-                const extraPills = extraCustomPills.map(p => (p.value || '').trim()).filter(Boolean);
+                const showDefaultPills = document.getElementById('showStatPills').checked;
+                const showCustomPills = document.getElementById('showCustomPills')?.checked !== false;
+                const basePills = showDefaultPills ? [
+                    document.getElementById('statPrimary').value.trim(),
+                    document.getElementById('statSecondary').value.trim(),
+                    document.getElementById('statProps').value.trim(),
+                    document.getElementById('statWeightVal').value.trim()
+                ].filter(Boolean) : [];
+                const extraPills = showCustomPills ? extraCustomPills.map(p => (p.value || '').trim()).filter(Boolean) : [];
                 const pills = [...basePills, ...extraPills];
 
-                if (pills.length > 0 && document.getElementById('showStatPills').checked) {
+                if (pills.length > 0) {
                     detailsBlock += `\`${pills.join('` • `')}\`\n`;
                 }
             }
@@ -6018,15 +6283,50 @@
         }
 
         // ==========================================
-        // EXACT 1:1 CANVAS, PNG & ANIMATED GIF EXPORT ENGINE
+        // EXACT 1:1 CANVAS & PNG EXPORT ENGINE
         // ==========================================
-        // Renders a masked snapshot of an `.watercolor-masked-area` element onto a temporary <img> for static canvas export
-        // so that even fallback renderers or tainted URLs preserve the exact Image-Area Watercolor Stain Edge Mask
-        function rasterizeMaskedAreaToDataUrl(areaEl, frameSourceEl) {
+        async function ensureCustomImageLoaded() {
+            if (!currentArtIsCustomImg || !rawCustomImageSource) return null;
+            if (cachedRawImageEl && cachedRawImageEl.complete && (cachedRawImageEl.naturalWidth > 0 || cachedRawImageEl.width > 0)) {
+                return cachedRawImageEl;
+            }
+            return new Promise((resolve) => {
+                const img = new Image();
+                if (!rawCustomImageSource.startsWith('data:')) {
+                    img.crossOrigin = 'anonymous';
+                }
+                img.onload = async () => {
+                    if (img.decode) {
+                        try { await img.decode(); } catch (_) {}
+                    }
+                    cachedRawImageEl = img;
+                    resolve(img);
+                };
+                img.onerror = () => {
+                    const imgFallback = new Image();
+                    imgFallback.onload = () => {
+                        cachedRawImageEl = imgFallback;
+                        resolve(imgFallback);
+                    };
+                    imgFallback.onerror = () => resolve(null);
+                    imgFallback.src = rawCustomImageSource;
+                };
+                img.src = rawCustomImageSource;
+            });
+        }
+
+        // Renders the active `.watercolor-masked-area` slot directly to a 2D Canvas with transforms, filters, and Watercolor Stain Edge Mask
+        function renderMaskedSlotToCanvas(areaEl, frameSourceEl, cardEl, scaleOverride = 2) {
             try {
-                const rect = areaEl.getBoundingClientRect();
-                const w = Math.max(64, Math.round((rect.width || 300) * 2));
-                const h = Math.max(64, Math.round((rect.height || 200) * 2));
+                const cardRect = cardEl.getBoundingClientRect();
+                const slotRect = areaEl.getBoundingClientRect();
+                if (slotRect.width < 2 || slotRect.height < 2) return null;
+
+                const relX = Math.round((slotRect.left - cardRect.left) * scaleOverride);
+                const relY = Math.round((slotRect.top - cardRect.top) * scaleOverride);
+                const w = Math.max(16, Math.round(slotRect.width * scaleOverride));
+                const h = Math.max(16, Math.round(slotRect.height * scaleOverride));
+
                 const c = document.createElement('canvas');
                 c.width = w;
                 c.height = h;
@@ -6035,21 +6335,39 @@
                 const imgEl = frameSourceEl || cachedRawImageEl || areaEl.querySelector('img');
                 if (!imgEl) return null;
 
-                const isFullBleed = !!document.getElementById('artFullBleed')?.checked;
-                const artScale = parseInt(document.getElementById('artScaleSlider')?.value, 10) || 100;
-                const artRotate = parseInt(document.getElementById('artRotateSlider')?.value, 10) || 0;
-                const artPosX = (parseInt(document.getElementById('artPosXSlider')?.value, 10) || 0) * 2;
-                const artPosY = (parseInt(document.getElementById('artPosYSlider')?.value, 10) || 0) * 2;
-
                 const natW = imgEl.naturalWidth || imgEl.videoWidth || imgEl.width || w;
                 const natH = imgEl.naturalHeight || imgEl.videoHeight || imgEl.height || h;
+                if (!natW || !natH) return null;
+
+                const isFullCardArt = areaEl.id === 'mainCardFullArtOnlyWrap';
+                const isFullBleed = isFullCardArt || !!document.getElementById('artFullBleed')?.checked;
+                const artScale = parseInt(document.getElementById('artScaleSlider')?.value, 10) || 100;
+                const artRotate = parseInt(document.getElementById('artRotateSlider')?.value, 10) || 0;
+                const artPosX = (parseInt(document.getElementById('artPosXSlider')?.value, 10) || 0) * scaleOverride;
+                const artPosY = (parseInt(document.getElementById('artPosYSlider')?.value, 10) || 0) * scaleOverride;
+
                 const fitScale = isFullBleed
                     ? Math.max(w / natW, h / natH)
                     : Math.min(w / natW, h / natH);
                 const drawW = natW * fitScale;
                 const drawH = natH * fitScale;
 
+                // Apply sketch / woodcut / faded filter if active
+                const artFilterEl = document.getElementById('artFilter');
+                const filterVal = artFilterEl ? artFilterEl.value : 'auto';
+                let ctxFilter = 'none';
+                if (filterVal === 'sketch' || (filterVal === 'auto' && ['scribble', 'alchemist', 'pirate'].includes(currentTheme))) {
+                    ctxFilter = 'sepia(0.75) contrast(1.25) brightness(0.95)';
+                } else if (filterVal === 'woodcut' || (filterVal === 'auto' && ['osr', 'bounty', 'newspaper', 'receipt'].includes(currentTheme))) {
+                    ctxFilter = 'grayscale(1) contrast(1.85) brightness(1.04)';
+                } else if (filterVal === 'faded') {
+                    ctxFilter = 'sepia(0.45) contrast(0.9) opacity(0.85)';
+                }
+
                 ctx.save();
+                if (ctxFilter !== 'none') {
+                    ctx.filter = ctxFilter;
+                }
                 ctx.translate(w / 2 + artPosX, h / 2 + artPosY);
                 ctx.rotate((artRotate * Math.PI) / 180);
                 ctx.scale((artFlipX ? -1 : 1) * (artScale / 100), (artFlipY ? -1 : 1) * (artScale / 100));
@@ -6060,214 +6378,209 @@
                 if (edgeMode !== 'none') {
                     const maskC = buildWatercolorMaskCanvas(w, h, fadeTop, fadeBottom, fadeLeft, fadeRight);
                     ctx.globalCompositeOperation = 'destination-in';
-                    ctx.drawImage(maskC, 0, 0);
+                    ctx.drawImage(maskC, 0, 0, w, h);
                     ctx.globalCompositeOperation = 'source-over';
                 }
 
-                return c.toDataURL('image/png');
+                return { canvas: c, relX, relY, w, h, isFullCardArt };
             } catch (err) {
                 return null;
             }
         }
 
-        // Self-contained GIF89a Multi-Frame Encoder (3-3-2 RGB palette + LZW) for exporting cards with animated GIFs
-        function encodeAnimatedGifFromCanvases(frameCanvases, delaysMs) {
-            const width = frameCanvases[0].width;
-            const height = frameCanvases[0].height;
-            const bytes = [];
-
-            function writeStr(s) {
-                for (let i = 0; i < s.length; i++) bytes.push(s.charCodeAt(i));
-            }
-            function writeU16(v) {
-                bytes.push(v & 0xff, (v >> 8) & 0xff);
-            }
-
-            // Header: GIF89a + Logical Screen Descriptor with 256-color Global Color Table (3-3-2 RGB)
-            writeStr('GIF89a');
-            writeU16(width);
-            writeU16(height);
-            bytes.push(0xf7, 0x00, 0x00);
-
-            for (let i = 0; i < 256; i++) {
-                const r = Math.round(((i >> 5) & 0x07) * (255 / 7));
-                const g = Math.round(((i >> 2) & 0x07) * (255 / 7));
-                const b = Math.round((i & 0x03) * (255 / 3));
-                bytes.push(r, g, b);
-            }
-
-            // Netscape 2.0 Infinite Loop Application Extension
-            bytes.push(0x21, 0xff, 0x0b);
-            writeStr('NETSCAPE2.0');
-            bytes.push(0x03, 0x01, 0x00, 0x00, 0x00);
-
-            function lzwEncode(indexStream) {
-                const minCodeSize = 8;
-                const clearCode = 256;
-                const eoiCode = 257;
-                const out = [minCodeSize];
-                let subBlock = [];
-                let bitBuf = 0;
-                let bitCnt = 0;
-
-                function emitBits(code, size) {
-                    bitBuf |= (code << bitCnt);
-                    bitCnt += size;
-                    while (bitCnt >= 8) {
-                        subBlock.push(bitBuf & 0xff);
-                        if (subBlock.length === 255) {
-                            out.push(255, ...subBlock);
-                            subBlock = [];
+        async function renderDomNodeToCanvas(el, exactW, exactH, scaleOverride) {
+            let renderedCanvas = null;
+            if (window.htmlToImage && typeof window.htmlToImage.toCanvas === 'function') {
+                try {
+                    renderedCanvas = await window.htmlToImage.toCanvas(el, {
+                        pixelRatio: scaleOverride,
+                        width: exactW,
+                        height: exactH,
+                        cacheBust: false,
+                        style: {
+                            margin: '0',
+                            transform: 'none',
+                            animation: 'none',
+                            transition: 'none',
+                            boxShadow: 'none'
                         }
-                        bitBuf >>= 8;
-                        bitCnt -= 8;
-                    }
+                    });
+                } catch (_) {
+                    renderedCanvas = null;
                 }
-
-                let codeSize = 9;
-                let nextCode = 258;
-                let dict = new Map();
-                emitBits(clearCode, codeSize);
-
-                let prefix = indexStream[0];
-                for (let i = 1; i < indexStream.length; i++) {
-                    const k = indexStream[i];
-                    const key = (prefix << 8) | k;
-                    const found = dict.get(key);
-                    if (found !== undefined) {
-                        prefix = found;
-                    } else {
-                        emitBits(prefix, codeSize);
-                        if (nextCode < 4096) {
-                            dict.set(key, nextCode++);
-                            if (nextCode > (1 << codeSize) && codeSize < 12) {
-                                codeSize++;
-                            }
-                        } else {
-                            emitBits(clearCode, codeSize);
-                            dict.clear();
-                            codeSize = 9;
-                            nextCode = 258;
-                        }
-                        prefix = k;
-                    }
-                }
-                emitBits(prefix, codeSize);
-                emitBits(eoiCode, codeSize);
-                if (bitCnt > 0) {
-                    subBlock.push(bitBuf & 0xff);
-                }
-                if (subBlock.length > 0) {
-                    out.push(subBlock.length, ...subBlock);
-                }
-                out.push(0x00);
-                return out;
             }
 
-            for (let f = 0; f < frameCanvases.length; f++) {
-                const fc = frameCanvases[f];
-                const fctx = fc.getContext('2d');
-                const imgData = fctx.getImageData(0, 0, width, height).data;
-                const delayCs = Math.max(4, Math.round((delaysMs[f] || 80) / 10));
+            if (!renderedCanvas) {
+                const stage = document.createElement('div');
+                stage.style.position = 'fixed';
+                stage.style.left = '0';
+                stage.style.top = '0';
+                stage.style.zIndex = '-9999';
+                stage.style.pointerEvents = 'none';
+                stage.style.width = `${exactW}px`;
+                stage.style.height = `${exactH}px`;
+                document.body.appendChild(stage);
 
-                // Graphic Control Extension
-                bytes.push(0x21, 0xf9, 0x04, 0x04);
-                writeU16(delayCs);
-                bytes.push(0x00, 0x00);
+                const clone = el.cloneNode(true);
+                clone.style.width = `${exactW}px`;
+                clone.style.minWidth = `${exactW}px`;
+                clone.style.maxWidth = `${exactW}px`;
+                clone.style.minHeight = `${exactH}px`;
+                clone.style.transform = 'none';
+                clone.style.margin = '0';
+                clone.style.boxShadow = 'none';
+                stage.appendChild(clone);
+                await new Promise(r => requestAnimationFrame(r));
 
-                // Image Descriptor
-                bytes.push(0x2c);
-                writeU16(0);
-                writeU16(0);
-                writeU16(width);
-                writeU16(height);
-                bytes.push(0x00);
-
-                // Quantize pixels to 3-3-2 RGB with ordered 2x2 Bayer dither for smooth parchment gradients
-                const indices = new Uint8Array(width * height);
-                let p = 0;
-                for (let y = 0; y < height; y++) {
-                    for (let x = 0; x < width; x++) {
-                        const idx = p * 4;
-                        const a = imgData[idx + 3];
-                        const r = a < 20 ? 15 : imgData[idx];
-                        const g = a < 20 ? 18 : imgData[idx + 1];
-                        const b = a < 20 ? 26 : imgData[idx + 2];
-                        const dither = ((x & 1) ^ (y & 1)) ? 4 : -4;
-                        const rq = Math.max(0, Math.min(7, Math.round((r + dither) * 7 / 255)));
-                        const gq = Math.max(0, Math.min(7, Math.round((g + dither) * 7 / 255)));
-                        const bq = Math.max(0, Math.min(3, Math.round((b + dither) * 3 / 255)));
-                        indices[p++] = (rq << 5) | (gq << 2) | bq;
-                    }
-                }
-
-                const compressed = lzwEncode(indices);
-                for (let j = 0; j < compressed.length; j++) bytes.push(compressed[j]);
+                renderedCanvas = await html2canvas(clone, {
+                    scale: scaleOverride,
+                    useCORS: true,
+                    backgroundColor: null,
+                    logging: false,
+                    x: 0,
+                    y: 0,
+                    scrollX: 0,
+                    scrollY: 0,
+                    width: exactW,
+                    height: exactH,
+                    windowWidth: exactW,
+                    windowHeight: exactH
+                });
+                document.body.removeChild(stage);
             }
-
-            bytes.push(0x3b);
-            return new Blob([new Uint8Array(bytes)], { type: 'image/gif' });
+            return renderedCanvas;
         }
 
-        async function generateAnimatedCardGifBlob() {
-            // Decode frames from the user's GIF using browser ImageDecoder (supported in modern Android/Desktop browsers)
-            let decodedFrames = [];
-            if (window.ImageDecoder && (rawCustomGifBuffer || rawCustomImageSource)) {
-                try {
-                    let buffer = rawCustomGifBuffer;
-                    if (!buffer && rawCustomImageSource) {
-                        const resp = await fetch(rawCustomImageSource);
-                        buffer = await resp.arrayBuffer();
-                    }
-                    if (buffer) {
-                        const decoder = new ImageDecoder({ data: buffer, type: 'image/gif' });
-                        await decoder.tracks.ready;
-                        const frameCount = Math.min(20, decoder.tracks.selectedTrack?.frameCount || 1);
-                        const workCanvas = document.createElement('canvas');
-                        let wCtx = null;
-                        for (let i = 0; i < frameCount; i++) {
-                            const res = await decoder.decode({ frameIndex: i });
-                            const vf = res.image;
-                            if (!wCtx) {
-                                workCanvas.width = vf.displayWidth || vf.codedWidth || 400;
-                                workCanvas.height = vf.displayHeight || vf.codedHeight || 400;
-                                wCtx = workCanvas.getContext('2d');
-                            }
-                            wCtx.clearRect(0, 0, workCanvas.width, workCanvas.height);
-                            wCtx.drawImage(vf, 0, 0);
-                            const frameSnapshot = document.createElement('canvas');
-                            frameSnapshot.width = workCanvas.width;
-                            frameSnapshot.height = workCanvas.height;
-                            frameSnapshot.getContext('2d').drawImage(workCanvas, 0, 0);
-                            const durationMs = vf.duration ? Math.round(vf.duration / 1000) : 90;
-                            decodedFrames.push({ canvas: frameSnapshot, delay: Math.max(50, durationMs) });
-                            vf.close();
-                        }
-                    }
-                } catch (_) {
-                    decodedFrames = [];
+        // Captures a Card Element's Base Layer and Foreground Text Layer once, then composites Masked Artwork (or GIF frames) directly in 2D Canvas
+        async function captureCardLayersForExport(el, scaleOverride = 2) {
+            const lockedEls = el.querySelectorAll('.card-art-gesture-locked');
+            lockedEls.forEach(node => node.classList.remove('card-art-gesture-locked'));
+
+            const savedTransform = el.style.transform;
+            el.style.transform = 'none';
+
+            const exactW = Math.ceil(el.offsetWidth || getCanonicalCardWidth());
+            const exactH = Math.ceil(Math.max(el.offsetHeight, el.scrollHeight));
+
+            const maskedSlots = Array.from(el.querySelectorAll('.watercolor-masked-area')).filter(
+                s => !s.classList.contains('hidden') && s.querySelector('img')
+            );
+
+            // Temporarily swap raw <img> src with a 1x1 transparent pixel & clear CSS mask during DOM snapshot
+            // so html-to-image / html2canvas NEVER chokes on large GIFs or external URLs!
+            const hiddenSlotState = [];
+            for (const slot of maskedSlots) {
+                const imgNode = slot.querySelector('img');
+                hiddenSlotState.push({
+                    slot,
+                    origWebkitMask: slot.style.webkitMaskImage,
+                    origMask: slot.style.maskImage,
+                    imgNode,
+                    origVis: imgNode ? imgNode.style.visibility : '',
+                    origSrc: imgNode ? imgNode.getAttribute('src') : ''
+                });
+                slot.style.webkitMaskImage = '';
+                slot.style.maskImage = '';
+                if (imgNode) {
+                    imgNode.style.visibility = 'hidden';
+                    imgNode.setAttribute('src', TRANSPARENT_1PX);
                 }
             }
 
-            // If single-frame or ImageDecoder unavailable, capture 6 frames at intervals
-            if (decodedFrames.length <= 1) {
-                const { canvases } = await generateAllCardsCanvases(1.25);
-                return encodeAnimatedGifFromCanvases([canvases[0]], [100]);
+            // 1. Capture Base Card (Background + Borders + Text)
+            const baseCanvas = await renderDomNodeToCanvas(el, exactW, exactH, scaleOverride);
+
+            // 2. If there is a visible artwork slot (not Full-Card Art Only), capture Foreground Text-Only Layer on transparent background
+            let fgCanvas = null;
+            const hasUnderTextSlot = maskedSlots.some(s => s.id !== 'mainCardFullArtOnlyWrap');
+            if (hasUnderTextSlot) {
+                const origBg = el.style.background;
+                const origBorder = el.style.borderColor;
+                const origShadow = el.style.boxShadow;
+                const scribble = el.querySelector('#scribbleOverlay');
+                const origScribbleVis = scribble ? scribble.style.visibility : '';
+
+                el.style.setProperty('background', 'transparent', 'important');
+                el.style.setProperty('border-color', 'transparent', 'important');
+                el.style.setProperty('box-shadow', 'none', 'important');
+                if (scribble) scribble.style.visibility = 'hidden';
+
+                fgCanvas = await renderDomNodeToCanvas(el, exactW, exactH, scaleOverride);
+
+                el.style.background = origBg;
+                el.style.borderColor = origBorder;
+                el.style.boxShadow = origShadow;
+                if (scribble) scribble.style.visibility = origScribbleVis;
             }
 
-            // Capture each frame on the main card at 1.15x scale for crisp, fast animated GIF generation
-            const frameCanvases = [];
-            const delays = [];
-            const maxFrames = Math.min(14, decodedFrames.length);
-            const step = Math.max(1, Math.floor(decodedFrames.length / maxFrames));
-
-            for (let i = 0; i < decodedFrames.length && frameCanvases.length < maxFrames; i += step) {
-                const { canvases } = await generateAllCardsCanvases(1.15, decodedFrames[i].canvas);
-                frameCanvases.push(canvases[0]);
-                delays.push(decodedFrames[i].delay * step);
+            // Restore DOM state
+            for (const item of hiddenSlotState) {
+                item.slot.style.webkitMaskImage = item.origWebkitMask;
+                item.slot.style.maskImage = item.origMask;
+                if (item.imgNode) {
+                    item.imgNode.setAttribute('src', item.origSrc);
+                    item.imgNode.style.visibility = item.origVis;
+                }
             }
 
-            return encodeAnimatedGifFromCanvases(frameCanvases, delays);
+            lockedEls.forEach(node => node.classList.add('card-art-gesture-locked'));
+
+            return { el, baseCanvas, fgCanvas, maskedSlots, savedTransform, scaleOverride };
+        }
+
+        function compositeCardFrameFromLayers(layerPack, frameSourceEl = null) {
+            const { el, baseCanvas, fgCanvas, maskedSlots, scaleOverride } = layerPack;
+            if (!maskedSlots || maskedSlots.length === 0) {
+                return baseCanvas;
+            }
+
+            const outCanvas = document.createElement('canvas');
+            outCanvas.width = baseCanvas.width;
+            outCanvas.height = baseCanvas.height;
+            const outCtx = outCanvas.getContext('2d');
+
+            // Step 1: Draw Card Base
+            outCtx.drawImage(baseCanvas, 0, 0);
+
+            const blendEl = document.getElementById('artBlendMultiply');
+            const useMultiply = blendEl && blendEl.checked && LIGHT_PARCHMENT_THEMES.includes(currentTheme);
+
+            // Step 2: Draw each Watercolor-Masked Artwork Slot directly onto the canvas
+            const prevTransform = el.style.transform;
+            el.style.transform = 'none';
+
+            for (const slot of maskedSlots) {
+                const artPatch = renderMaskedSlotToCanvas(slot, frameSourceEl, el, scaleOverride);
+                if (!artPatch) continue;
+
+                outCtx.save();
+                if (useMultiply) {
+                    outCtx.globalCompositeOperation = 'multiply';
+                }
+                outCtx.drawImage(artPatch.canvas, artPatch.relX, artPatch.relY, artPatch.w, artPatch.h);
+                outCtx.restore();
+
+                // Step 3: Restore any Foreground Text / Bookend Borders that sit above the artwork fringes
+                if (fgCanvas && !artPatch.isFullCardArt) {
+                    const textPatch = document.createElement('canvas');
+                    textPatch.width = artPatch.w;
+                    textPatch.height = artPatch.h;
+                    const tCtx = textPatch.getContext('2d');
+
+                    tCtx.drawImage(
+                        fgCanvas,
+                        artPatch.relX, artPatch.relY, artPatch.w, artPatch.h,
+                        0, 0, artPatch.w, artPatch.h
+                    );
+                    tCtx.globalCompositeOperation = 'destination-in';
+                    tCtx.drawImage(artPatch.canvas, 0, 0);
+
+                    outCtx.drawImage(textPatch, artPatch.relX, artPatch.relY);
+                }
+            }
+
+            el.style.transform = prevTransform;
+            return outCanvas;
         }
 
         async function generateAllCardsCanvases(scaleOverride = 2, customFrameSource = null) {
@@ -6285,6 +6598,7 @@
                 previewPanel.style.pointerEvents = 'none';
             }
 
+            await ensureCustomImageLoaded();
             renderCard();
             if (document.fonts && document.fonts.ready) {
                 try { await document.fonts.ready; } catch (_) {}
@@ -6298,116 +6612,10 @@
             const canvases = [];
             try {
                 for (const el of allCardElements) {
-                    const lockedEls = el.querySelectorAll('.card-art-gesture-locked');
-                    lockedEls.forEach(node => node.classList.remove('card-art-gesture-locked'));
-
-                    const savedTransform = el.style.transform;
-                    el.style.transform = 'none';
-
-                    // Bake the Image-Area Watercolor Stain Edge Mask onto visible artwork slots during canvas capture
-                    // so both html-to-image and html2canvas export 100% identical watercolor edges
-                    const savedSlotStates = [];
-                    const maskedSlots = Array.from(el.querySelectorAll('.watercolor-masked-area')).filter(s => !s.classList.contains('hidden') && s.querySelector('img'));
-                    for (const slot of maskedSlots) {
-                        const imgNode = slot.querySelector('img');
-                        const bakedDataUrl = rasterizeMaskedAreaToDataUrl(slot, customFrameSource);
-                        if (imgNode && bakedDataUrl) {
-                            savedSlotStates.push({
-                                slot,
-                                imgNode,
-                                origSrc: imgNode.src,
-                                origStyle: imgNode.getAttribute('style') || '',
-                                origClass: imgNode.className,
-                                origMask: slot.style.maskImage,
-                                origWebkitMask: slot.style.webkitMaskImage
-                            });
-                            slot.style.webkitMaskImage = '';
-                            slot.style.maskImage = '';
-                            imgNode.src = bakedDataUrl;
-                            imgNode.style.transform = 'none';
-                            imgNode.className = imgNode.className.replace(/object-cover|object-contain/g, '') + ' w-full h-full object-fill block';
-                        }
-                    }
-                    if (savedSlotStates.length > 0) {
-                        await new Promise(r => requestAnimationFrame(r));
-                    }
-
-                    const exactW = Math.ceil(el.offsetWidth || getCanonicalCardWidth());
-                    const exactH = Math.ceil(Math.max(el.offsetHeight, el.scrollHeight));
-
-                    let renderedCanvas = null;
-
-                    if (window.htmlToImage && typeof window.htmlToImage.toCanvas === 'function') {
-                        try {
-                            renderedCanvas = await window.htmlToImage.toCanvas(el, {
-                                pixelRatio: scaleOverride,
-                                width: exactW,
-                                height: exactH,
-                                cacheBust: false,
-                                style: {
-                                    margin: '0',
-                                    transform: 'none',
-                                    animation: 'none',
-                                    transition: 'none',
-                                    boxShadow: 'none'
-                                }
-                            });
-                        } catch (htiErr) {
-                            renderedCanvas = null;
-                        }
-                    }
-
-                    if (!renderedCanvas) {
-                        const stage = document.createElement('div');
-                        stage.style.position = 'fixed';
-                        stage.style.left = '0';
-                        stage.style.top = '0';
-                        stage.style.zIndex = '-9999';
-                        stage.style.pointerEvents = 'none';
-                        stage.style.width = `${exactW}px`;
-                        stage.style.height = `${exactH}px`;
-                        document.body.appendChild(stage);
-
-                        const clone = el.cloneNode(true);
-                        clone.style.width = `${exactW}px`;
-                        clone.style.minWidth = `${exactW}px`;
-                        clone.style.maxWidth = `${exactW}px`;
-                        clone.style.minHeight = `${exactH}px`;
-                        clone.style.transform = 'none';
-                        clone.style.margin = '0';
-                        clone.style.boxShadow = 'none';
-                        stage.appendChild(clone);
-                        await new Promise(r => requestAnimationFrame(r));
-
-                        renderedCanvas = await html2canvas(clone, {
-                            scale: scaleOverride,
-                            useCORS: true,
-                            backgroundColor: null,
-                            logging: false,
-                            x: 0,
-                            y: 0,
-                            scrollX: 0,
-                            scrollY: 0,
-                            width: exactW,
-                            height: exactH,
-                            windowWidth: exactW,
-                            windowHeight: exactH
-                        });
-                        document.body.removeChild(stage);
-                    }
-
-                    // Restore live DOM state (including animated GIF src & CSS mask-image)
-                    for (const st of savedSlotStates) {
-                        st.imgNode.src = st.origSrc;
-                        st.imgNode.setAttribute('style', st.origStyle);
-                        st.imgNode.className = st.origClass;
-                        st.slot.style.maskImage = st.origMask;
-                        st.slot.style.webkitMaskImage = st.origWebkitMask;
-                    }
-
-                    el.style.transform = savedTransform;
+                    const layerPack = await captureCardLayersForExport(el, scaleOverride);
+                    const renderedCanvas = compositeCardFrameFromLayers(layerPack, customFrameSource);
+                    el.style.transform = layerPack.savedTransform;
                     canvases.push(renderedCanvas);
-                    lockedEls.forEach(node => node.classList.add('card-art-gesture-locked'));
                 }
             } finally {
                 if (wasHidden) {
@@ -6481,23 +6689,6 @@
         async function shareCardNative() {
             try {
                 const baseSlug = (document.getElementById('itemName').value || 'dnd-card').toLowerCase().replace(/[^a-z0-9]+/g, '-');
-                if (currentArtIsCustomImg && isAnimatedGifArt) {
-                    showToast("Preparing Animated GIF...", "Encoding animated GIF card...");
-                    const gifBlob = await generateAnimatedCardGifBlob();
-                    const gifFile = new File([gifBlob], `${baseSlug}.gif`, { type: 'image/gif' });
-                    if (navigator.canShare && navigator.canShare({ files: [gifFile] })) {
-                        await navigator.share({
-                            files: [gifFile],
-                            title: document.getElementById('itemName').value || 'D&D 5e Homebrew',
-                            text: 'Created with Cauldron of Cards'
-                        });
-                        showToast("Shared Animated GIF!", "Sent to your selected app.");
-                        return;
-                    }
-                    await downloadCardPNG();
-                    return;
-                }
-
                 showToast("Preparing Share...", "Rendering card image...");
                 const { canvases } = await generateAllCardsCanvases();
                 const files = [];
@@ -6553,19 +6744,6 @@
         async function downloadCardPNG() {
             try {
                 const baseSlug = (document.getElementById('itemName').value || 'dnd-card').toLowerCase().replace(/[^a-z0-9]+/g, '-');
-                if (currentArtIsCustomImg && isAnimatedGifArt) {
-                    showToast("Encoding Animated GIF...", "Rendering animated card frames...");
-                    const gifBlob = await generateAnimatedCardGifBlob();
-                    const gifUrl = URL.createObjectURL(gifBlob);
-                    const link = document.createElement('a');
-                    link.download = `${baseSlug}.gif`;
-                    link.href = gifUrl;
-                    link.click();
-                    setTimeout(() => URL.revokeObjectURL(gifUrl), 5000);
-                    showToast("Animated GIF Downloaded!", "Saved animated .gif card to your device.");
-                    return;
-                }
-
                 const { dataUrls } = await generateAllCardsCanvases();
                 dataUrls.forEach((url, idx) => {
                     const link = document.createElement('a');
@@ -6610,6 +6788,7 @@
                 reqAttune: document.getElementById('reqAttune').checked,
                 attuneText: document.getElementById('attuneText').value,
                 showStatPills: document.getElementById('showStatPills').checked,
+                showCustomPills: document.getElementById('showCustomPills')?.checked !== false,
                 activeCorePillSlots: activeCorePillSlots,
                 extraCustomPills: extraCustomPills,
                 statPrimary: document.getElementById('statPrimary').value,
@@ -6624,6 +6803,7 @@
                 monAC: document.getElementById('monAC')?.value || '17 (natural armor)',
                 monHP: document.getElementById('monHP')?.value || '136 (16d10 + 48)',
                 monSpeed: document.getElementById('monSpeed')?.value || '40 ft.',
+                monInit: document.getElementById('monInit')?.value || '',
                 monSaves: document.getElementById('monSaves')?.value || '',
                 monSkills: document.getElementById('monSkills')?.value || '',
                 monResist: document.getElementById('monResist')?.value || '',
@@ -6696,6 +6876,9 @@
             document.getElementById('reqAttune').checked = !!p.reqAttune;
             document.getElementById('attuneText').value = p.attuneText || '';
             document.getElementById('showStatPills').checked = !!p.showStatPills;
+            const showCustom = p.showCustomPills !== false;
+            if (document.getElementById('showCustomPills')) document.getElementById('showCustomPills').checked = showCustom;
+            if (document.getElementById('showMonsterCustomPills')) document.getElementById('showMonsterCustomPills').checked = showCustom;
             activeCorePillSlots = p.activeCorePillSlots !== undefined ? p.activeCorePillSlots : 4;
             extraCustomPills = Array.isArray(p.extraCustomPills) ? p.extraCustomPills : [];
             updateCorePillSlotsVisibility();
@@ -6708,10 +6891,10 @@
             document.getElementById('chargeMax').value = p.chargeMax || 7;
             document.getElementById('chargeRegain').value = p.chargeRegain || '1d6 + 1';
             document.getElementById('chargeTiming').value = p.chargeTiming || 'daily at dawn';
-
-            if (p.monAC && document.getElementById('monAC')) document.getElementById('monAC').value = p.monAC;
-            if (p.monHP && document.getElementById('monHP')) document.getElementById('monHP').value = p.monHP;
-            if (p.monSpeed && document.getElementById('monSpeed')) document.getElementById('monSpeed').value = p.monSpeed;
+            if (p.monAC !== undefined && document.getElementById('monAC')) document.getElementById('monAC').value = p.monAC;
+            if (p.monHP !== undefined && document.getElementById('monHP')) document.getElementById('monHP').value = p.monHP;
+            if (p.monSpeed !== undefined && document.getElementById('monSpeed')) document.getElementById('monSpeed').value = p.monSpeed;
+            if (p.monInit !== undefined && document.getElementById('monInit')) document.getElementById('monInit').value = p.monInit;
             if (p.monSaves !== undefined && document.getElementById('monSaves')) document.getElementById('monSaves').value = p.monSaves;
             if (p.monSkills !== undefined && document.getElementById('monSkills')) document.getElementById('monSkills').value = p.monSkills;
             if (p.monResist !== undefined && document.getElementById('monResist')) document.getElementById('monResist').value = p.monResist;
@@ -6889,13 +7072,10 @@
             resetArtTransform();
             syncMiniLayoutControls('main');
             rawCustomImageSource = null;
-            rawCustomGifBuffer = null;
-            isAnimatedGifArt = false;
             cachedRawImageEl = null;
             cachedMaskKey = '';
             currentArtIsCustomImg = false;
             currentArtSource = '';
-            updateDownloadButtonLabels();
             applyPinnedDefaults();
             renderCard();
             showToast("Form Cleared", "Pinned default fields were preserved.");
