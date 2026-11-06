@@ -72,6 +72,18 @@
         .animate-modal-pop {
             animation: modalPop 0.28s cubic-bezier(0.22, 1, 0.36, 1) forwards;
         }
+        @keyframes drawerSlideUp {
+            0% { opacity: 0; transform: translateY(44px) scale(0.985); }
+            100% { opacity: 1; transform: translateY(0) scale(1); }
+        }
+        .animate-bottom-sheet {
+            animation: drawerSlideUp 0.26s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+        }
+        @media (min-width: 1024px) {
+            .animate-bottom-sheet {
+                animation: modalPop 0.28s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+            }
+        }
         .animate-card-Swap {
             animation: cardPulse 0.24s cubic-bezier(0.22, 1, 0.36, 1);
         }
@@ -1189,8 +1201,11 @@
     <!-- ==========================================
          FLOATING BREW CATEGORY SWITCHER MODAL
          ========================================== -->
-    <div id="floatingBrewModal" onclick="if(event.target === this) closeFloatingBrewModal()" class="fixed inset-0 z-50 bg-black/75 backdrop-blur-md hidden items-center justify-center p-3 sm:p-6">
-        <div class="animate-modal-pop bg-[#121622]/95 border border-amber-500/30 rounded-2xl max-w-4xl w-full max-h-[88dvh] flex flex-col shadow-2xl overflow-hidden">
+    <div id="floatingBrewModal" onclick="if(event.target === this) closeFloatingBrewModal()" class="fixed inset-0 z-50 bg-black/75 backdrop-blur-md hidden items-end lg:items-center justify-center px-2 pt-3 pb-[76px] lg:p-6">
+        <div class="animate-bottom-sheet bg-[#121622]/95 border border-amber-500/30 rounded-2xl max-w-4xl w-full max-h-[78dvh] lg:max-h-[88dvh] flex flex-col shadow-2xl overflow-hidden">
+            <div class="lg:hidden pt-2.5 pb-1 flex justify-center bg-[#0c0f17] shrink-0 cursor-pointer" onclick="closeFloatingBrewModal()">
+                <span class="w-10 h-1 rounded-full bg-slate-700"></span>
+            </div>
             <div class="px-5 py-3.5 bg-[#0c0f17] border-b border-slate-800 flex items-center justify-between">
                 <div class="flex items-center gap-2">
                     <i data-lucide="compass" class="w-4 h-4 text-amber-400"></i>
@@ -1209,8 +1224,11 @@
     <!-- ==========================================
          100 CARD STYLES & MIX AND MATCH STUDIO MODAL
          ========================================== -->
-    <div id="stylePickerModal" onclick="if(event.target === this) closeStylePickerModal()" class="fixed inset-0 z-50 bg-black/75 backdrop-blur-md hidden items-center justify-center p-3 sm:p-6">
-        <div class="animate-modal-pop bg-[#121622]/95 border border-amber-500/30 rounded-2xl max-w-4xl w-full max-h-[88dvh] flex flex-col shadow-2xl overflow-hidden">
+    <div id="stylePickerModal" onclick="if(event.target === this) closeStylePickerModal()" class="fixed inset-0 z-50 bg-black/75 backdrop-blur-md hidden items-end lg:items-center justify-center px-2 pt-3 pb-[76px] lg:p-6">
+        <div class="animate-bottom-sheet bg-[#121622]/95 border border-amber-500/30 rounded-2xl max-w-4xl w-full max-h-[78dvh] lg:max-h-[88dvh] flex flex-col shadow-2xl overflow-hidden">
+            <div class="lg:hidden pt-2.5 pb-1 flex justify-center bg-[#0c0f17] shrink-0 cursor-pointer" onclick="closeStylePickerModal()">
+                <span class="w-10 h-1 rounded-full bg-slate-700"></span>
+            </div>
             <div class="px-5 py-3.5 bg-[#0c0f17] border-b border-slate-800 flex flex-wrap items-center justify-between gap-2">
                 <div class="flex items-center gap-2">
                     <i data-lucide="palette" class="w-4 h-4 text-amber-400"></i>
@@ -1483,7 +1501,7 @@
          FLOATING QUICK IMAGE PREVIEW OVERLAY
          ========================================== -->
     <div id="quickPreviewOverlay" onclick="if(event.target.tagName !== 'IMG') closeQuickFloatingPreview()" class="fixed inset-0 z-40 hidden flex-col items-center justify-start p-4 sm:p-6 overflow-y-auto overscroll-contain">
-        <div class="w-full max-w-3xl min-h-full flex flex-col items-center justify-center py-6">
+        <div class="w-full max-w-3xl my-auto mx-auto shrink-0 flex flex-col items-center justify-start pt-6 pb-10">
             <div id="quickFloatingImageContainer" class="w-full flex flex-col sm:flex-row flex-wrap items-center justify-center gap-5 py-2"></div>
         </div>
     </div>
@@ -2648,8 +2666,21 @@
                 <!-- ====================================================
                      THE MAGIC ITEM / HOMEBREW CARD (Canonical dimensions preserved across all devices)
                      ==================================================== -->
-                <div id="mainCardScaleWrap" class="relative block shrink-0 mx-auto">
-                    <article id="magicItemCard" class="theme-parchment card-corners-sharp relative w-[520px] transition-colors duration-200 overflow-hidden select-text flex flex-col justify-between shrink-0">
+                <div class="w-full flex flex-col items-center gap-1.5">
+                    <!-- Per-Card Download Bar for Card 1 (Shown automatically when Multi-Card / Card-Back is active) -->
+                    <div id="mainCardPageDownloadBar" class="hidden flex items-center justify-between gap-2 px-1 mx-auto">
+                        <span class="text-[11px] font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
+                            <span class="w-2 h-2 rounded-full bg-amber-400"></span>
+                            <span>Page 1 • Main Card</span>
+                        </span>
+                        <button type="button" onclick="downloadSingleCardByIndex(0, this)" class="btn-press px-2.5 py-1 rounded-lg bg-[#151822] hover:bg-amber-500/20 text-amber-300 border border-amber-500/40 text-xs font-semibold flex items-center gap-1.5 shadow" title="Download Page 1 PNG">
+                            <i data-lucide="download" class="w-3.5 h-3.5"></i>
+                            <span>Download Page 1</span>
+                        </button>
+                    </div>
+
+                    <div id="mainCardScaleWrap" class="relative block shrink-0 mx-auto">
+                        <article id="magicItemCard" class="theme-parchment card-corners-sharp relative w-[520px] transition-colors duration-200 overflow-hidden select-text flex flex-col justify-between shrink-0">
                         <!-- TOP ORNATE 5E BOOKEND BORDER -->
                         <div id="topBookBorder" class="w-full h-2.5 bg-gradient-to-r from-[#8B6F36] via-[#E5C985] to-[#8B6F36] border-b border-[#58180D] shrink-0 relative z-20">
                             <svg class="w-full h-full opacity-55 block" preserveAspectRatio="none" viewBox="0 0 800 10">
@@ -2701,8 +2732,8 @@
                                 <!-- FULL-CARD IMAGE ONLY OVERLAY (Used when Main Card Mode === 'full-art') -->
                                 <div id="mainCardFullArtOnlyWrap" class="hidden watercolor-masked-area absolute inset-0 z-30 w-full h-full overflow-hidden"></div>
 
-                                <!-- TOP/MAIN CONTENT WRAPPER (Always aligned to top of card) -->
-                                <div id="mainCardTopBodyWrap" class="w-full pb-2.5 relative">
+                                <!-- TOP/MAIN CONTENT WRAPPER (Always aligned to top of card; shrinks before footer so footer is never pushed down) -->
+                                <div id="mainCardTopBodyWrap" class="w-full pb-2.5 relative flex-auto min-h-0">
                                     <!-- TOP SHOWCASE ARTWORK (Layered right under text so enlarged watercolor fringes can overlap under title) -->
                                     <div id="artBannerTop" class="hidden card-art-layer-under-text watercolor-masked-area mb-2 w-full flex justify-center items-center">
                                         <div id="artBannerContainer" class="w-full h-full flex items-center justify-center overflow-hidden"></div>
@@ -2826,6 +2857,7 @@
                             </svg>
                         </div>
                     </article>
+                    </div>
                 </div>
 
                 <!-- CONTINUATION CARDS CONTAINER (Populated automatically when Fixed Size + Multi-Card Split overflows) -->
@@ -2849,38 +2881,39 @@
 
     <!-- ==========================================
          MOBILE FLOATING BOTTOM NAVIGATION BAR (Raised above phone gesture area)
+         Order: Types | Edit | Export (Centerpiece) | Styles | Deck
          ========================================== -->
-    <nav style="margin-bottom: env(safe-area-inset-bottom, 4px);" class="lg:hidden fixed bottom-3 left-3 right-3 z-40 bg-[#10131c]/95 backdrop-blur-md border border-slate-700/90 rounded-2xl px-2 py-1.5 flex items-center justify-around shadow-[0_14px_34px_rgba(0,0,0,0.85)]">
-        <button onclick="openFloatingBrewModal()" class="btn-press flex-1 py-1.5 rounded-xl flex flex-col items-center gap-0.5 text-slate-400 font-medium transition">
+    <nav style="margin-bottom: env(safe-area-inset-bottom, 4px);" class="lg:hidden fixed bottom-3 left-3 right-3 z-[60] bg-[#10131c]/95 backdrop-blur-md border border-slate-700/90 rounded-2xl px-2 py-1.5 flex items-center justify-around shadow-[0_14px_34px_rgba(0,0,0,0.85)]">
+        <button type="button" onclick="toggleMobileDrawerTab('types')" id="mobNav-types" class="btn-press flex-1 py-1.5 rounded-xl flex flex-col items-center gap-0.5 text-slate-400 font-medium transition">
             <i data-lucide="layout-grid" class="w-5 h-5"></i>
             <span class="text-[11px]">Types</span>
         </button>
-        <button onclick="switchMobileView('edit')" id="mobNav-edit" class="btn-press flex-1 py-1.5 rounded-xl flex flex-col items-center gap-0.5 text-amber-400 font-semibold transition">
+        <button type="button" onclick="switchMobileView('edit')" id="mobNav-edit" class="btn-press flex-1 py-1.5 rounded-xl flex flex-col items-center gap-0.5 text-amber-400 bg-amber-500/10 font-semibold transition">
             <i data-lucide="pen-line" class="w-5 h-5"></i>
             <span class="text-[11px]">Edit</span>
         </button>
-        <button onclick="openStylePickerModal()" class="btn-press flex-1 py-1.5 rounded-xl flex flex-col items-center gap-0.5 text-slate-400 font-medium transition">
+        <button type="button" onclick="switchMobileView('export')" id="mobNav-export" class="btn-press flex-1 py-1.5 mx-1 rounded-xl bg-gradient-to-r from-indigo-600 to-violet-600 text-white font-semibold flex flex-col items-center gap-0.5 shadow-md transition">
+            <i data-lucide="share-2" class="w-5 h-5"></i>
+            <span class="text-[11px]">Export</span>
+        </button>
+        <button type="button" onclick="toggleMobileDrawerTab('styles')" id="mobNav-styles" class="btn-press flex-1 py-1.5 rounded-xl flex flex-col items-center gap-0.5 text-slate-400 font-medium transition">
             <i data-lucide="palette" class="w-5 h-5"></i>
             <span class="text-[11px]">Styles</span>
         </button>
-        <button onclick="toggleVaultModal()" class="btn-press flex-1 py-1.5 rounded-xl flex flex-col items-center gap-0.5 text-slate-400 font-medium transition relative">
+        <button type="button" onclick="toggleMobileDrawerTab('deck')" id="mobNav-deck" class="btn-press flex-1 py-1.5 rounded-xl flex flex-col items-center gap-0.5 text-slate-400 font-medium transition relative">
             <svg class="w-5 h-5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                 <rect x="9" y="6" width="11" height="15" rx="2"/>
                 <path d="M9 18.5 6.8 18.9a2 2 0 0 1-2.3-1.7L2.8 6.4a2 2 0 0 1 1.7-2.3l7.9-1.3a2 2 0 0 1 2.3 1.7L15 6"/>
             </svg>
             <span class="text-[11px]">Deck</span>
-            <span id="vaultCountBadgeMobile" class="absolute top-1 right-4 px-1.5 py-0.2 bg-amber-500/20 text-amber-300 border border-amber-500/40 rounded-full text-[10px] font-bold">0</span>
-        </button>
-        <button onclick="switchMobileView('export')" id="mobNav-export" class="btn-press flex-1 py-1.5 mx-1 rounded-xl bg-gradient-to-r from-indigo-600 to-violet-600 text-white font-semibold flex flex-col items-center gap-0.5 shadow-md transition">
-            <i data-lucide="share-2" class="w-5 h-5"></i>
-            <span class="text-[11px]">Export</span>
+            <span id="vaultCountBadgeMobile" class="absolute top-1 right-3.5 px-1.5 py-0.2 bg-amber-500/20 text-amber-300 border border-amber-500/40 rounded-full text-[10px] font-bold">0</span>
         </button>
     </nav>
 
     <!-- ==========================================
          ANDROID & DISCORD EXPORT / LONG-PRESS MODAL
          ========================================== -->
-    <div id="exportModal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm hidden items-end sm:items-center justify-center p-0 sm:p-4">
+    <div id="exportModal" onclick="if(event.target === this) closeExportSheet()" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm hidden items-end sm:items-center justify-center p-0 sm:p-4">
         <div class="bg-[#151823] border-t sm:border border-slate-700 rounded-t-2xl sm:rounded-2xl max-w-lg w-full max-h-[92vh] flex flex-col shadow-2xl overflow-hidden">
             <!-- Header -->
             <div class="px-5 py-3.5 bg-[#0f121a] border-b border-slate-800 flex items-center justify-between">
@@ -2935,8 +2968,11 @@
     <!-- ==========================================
          DECK OF HOLDING MODAL
          ========================================== -->
-    <div id="vaultModal" class="fixed inset-0 z-50 bg-black/75 backdrop-blur-sm hidden items-end sm:items-center justify-center p-0 sm:p-4">
-        <div class="bg-[#161923] border-t sm:border border-slate-700 rounded-t-2xl sm:rounded-2xl max-w-2xl w-full max-h-[85vh] flex flex-col shadow-2xl overflow-hidden">
+    <div id="vaultModal" onclick="if(event.target === this) toggleVaultModal(false)" class="fixed inset-0 z-50 bg-black/75 backdrop-blur-sm hidden items-end lg:items-center justify-center px-2 pt-3 pb-[76px] lg:p-4">
+        <div class="animate-bottom-sheet bg-[#161923] border border-amber-500/30 lg:border-slate-700 rounded-2xl max-w-2xl w-full max-h-[78dvh] lg:max-h-[85vh] flex flex-col shadow-2xl overflow-hidden">
+            <div class="lg:hidden pt-2.5 pb-1 flex justify-center bg-[#10131a] shrink-0 cursor-pointer" onclick="toggleVaultModal(false)">
+                <span class="w-10 h-1 rounded-full bg-slate-700"></span>
+            </div>
             <div class="px-5 py-4 bg-[#10131a] border-b border-slate-800 flex items-center justify-between">
                 <div class="flex items-center gap-2">
                     <svg class="w-5 h-5 text-amber-400 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
@@ -2945,7 +2981,7 @@
                     </svg>
                     <h3 class="font-5e-title text-lg font-bold text-amber-300">Deck of Holding</h3>
                 </div>
-                <button onclick="toggleVaultModal()" class="text-slate-400 hover:text-white p-1">
+                <button onclick="toggleVaultModal(false)" class="text-slate-400 hover:text-white p-1">
                     <i data-lucide="x" class="w-5 h-5"></i>
                 </button>
             </div>
@@ -4138,24 +4174,82 @@
             }
         }
 
+        function getActiveMobileDrawer() {
+            const brewOpen = !document.getElementById('floatingBrewModal')?.classList.contains('hidden');
+            if (brewOpen) return 'types';
+            const styleOpen = !document.getElementById('stylePickerModal')?.classList.contains('hidden');
+            if (styleOpen) return 'styles';
+            const deckOpen = !document.getElementById('vaultModal')?.classList.contains('hidden');
+            if (deckOpen) return 'deck';
+            return null;
+        }
+
+        function closeAllMobileDrawers(exceptDrawer = null) {
+            if (exceptDrawer !== 'types') {
+                const m = document.getElementById('floatingBrewModal');
+                if (m) { m.classList.add('hidden'); m.classList.remove('flex'); }
+            }
+            if (exceptDrawer !== 'styles') {
+                const m = document.getElementById('stylePickerModal');
+                if (m) { m.classList.add('hidden'); m.classList.remove('flex'); }
+            }
+            if (exceptDrawer !== 'deck') {
+                const m = document.getElementById('vaultModal');
+                if (m) { m.classList.add('hidden'); m.classList.remove('flex'); }
+            }
+            updateMobileNavHighlight();
+        }
+
+        function updateMobileNavHighlight() {
+            const activeDrawer = getActiveMobileDrawer();
+            const activeTab = activeDrawer || (currentMobileView === 'preview' ? 'export' : currentMobileView);
+
+            const standardTabs = ['types', 'edit', 'styles', 'deck'];
+            standardTabs.forEach(tab => {
+                const btn = document.getElementById(`mobNav-${tab}`);
+                if (!btn) return;
+                const isActive = activeTab === tab;
+                btn.className = isActive
+                    ? `btn-press flex-1 py-1.5 rounded-xl flex flex-col items-center gap-0.5 text-amber-400 bg-amber-500/10 font-semibold transition${tab === 'deck' ? ' relative' : ''}`
+                    : `btn-press flex-1 py-1.5 rounded-xl flex flex-col items-center gap-0.5 text-slate-400 font-medium transition${tab === 'deck' ? ' relative' : ''}`;
+            });
+
+            const navExport = document.getElementById('mobNav-export');
+            if (navExport) {
+                const isExportActive = activeTab === 'export';
+                navExport.classList.toggle('ring-2', isExportActive);
+                navExport.classList.toggle('ring-amber-400', isExportActive);
+                navExport.classList.toggle('opacity-90', !isExportActive && Boolean(activeDrawer));
+            }
+        }
+
+        function toggleMobileDrawerTab(drawerName) {
+            const currentOpen = getActiveMobileDrawer();
+            if (currentOpen === drawerName) {
+                closeAllMobileDrawers();
+                return;
+            }
+            closeAllMobileDrawers(drawerName);
+            if (drawerName === 'types') {
+                openFloatingBrewModal();
+            } else if (drawerName === 'styles') {
+                openStylePickerModal();
+            } else if (drawerName === 'deck') {
+                toggleVaultModal(true);
+            }
+        }
+
         function switchMobileView(view) {
+            closeAllMobileDrawers();
             currentMobileView = view;
             const editor = document.getElementById('mobileEditorPanel');
             const preview = document.getElementById('mobilePreviewPanel');
-            const navEdit = document.getElementById('mobNav-edit');
-            const navExport = document.getElementById('mobNav-export');
 
             if (view === 'preview' || view === 'export') {
                 editor.classList.add('hidden', 'lg:flex');
                 preview.classList.remove('hidden');
                 preview.classList.add('flex', 'animate-view-switch');
-                if (navEdit) {
-                    navEdit.classList.replace('text-amber-400', 'text-slate-400');
-                    navEdit.classList.replace('font-semibold', 'font-medium');
-                }
-                if (navExport) {
-                    navExport.classList.add('ring-2', 'ring-amber-400');
-                }
+                updateMobileNavHighlight();
                 renderCard();
                 requestAnimationFrame(() => applyResponsivePreviewScale());
                 window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -4166,13 +4260,7 @@
                 editor.classList.add('animate-view-switch');
                 preview.classList.add('hidden');
                 preview.classList.remove('flex');
-                if (navEdit) {
-                    navEdit.classList.replace('text-slate-400', 'text-amber-400');
-                    navEdit.classList.replace('font-medium', 'font-semibold');
-                }
-                if (navExport) {
-                    navExport.classList.remove('ring-2', 'ring-amber-400');
-                }
+                updateMobileNavHighlight();
                 window.scrollTo({ top: 0, behavior: 'smooth' });
             }
         }
@@ -4223,10 +4311,16 @@
                 const { dataUrls } = await generateAllCardsCanvases();
                 overlay.scrollTop = 0;
                 container.innerHTML = dataUrls.map((url, idx) => `
-                    <div class="flex flex-col items-center justify-center gap-1.5 animate-modal-pop max-w-full">
-                        <img src="${url}" onclick="event.stopPropagation()" alt="Quick Card Preview ${idx + 1}" class="max-w-[92vw] sm:max-w-full max-h-[80dvh] w-auto h-auto object-contain rounded-lg shadow-[0_20px_60px_rgba(0,0,0,0.75)] border border-white/10 select-all">
+                    <div class="flex flex-col items-center justify-center gap-2 animate-modal-pop max-w-full">
+                        <img src="${url}" onclick="event.stopPropagation()" alt="Quick Card Preview ${idx + 1}" class="max-w-[92vw] sm:max-w-full max-h-[76dvh] w-auto h-auto object-contain rounded-lg shadow-[0_20px_60px_rgba(0,0,0,0.75)] border border-white/10 select-all">
+                        ${dataUrls.length > 1 ? `
+                        <button type="button" onclick="event.stopPropagation(); downloadSingleCardByIndex(${idx}, this)" class="btn-press px-3 py-1.5 rounded-lg bg-[#151822]/95 hover:bg-amber-500/25 text-amber-300 border border-amber-500/40 text-xs font-semibold flex items-center gap-1.5 shadow-lg">
+                            <i data-lucide="download" class="w-3.5 h-3.5"></i>
+                            <span>Download Card ${idx + 1}</span>
+                        </button>` : ''}
                     </div>
                 `).join('');
+                lucide.createIcons();
             } catch (e) {
                 container.innerHTML = `<div class="p-6 rounded-xl bg-red-950/80 border border-red-500/40 text-red-200 text-xs animate-modal-pop">Unable to render image preview. Check external image CORS or use an uploaded image.</div>`;
             }
@@ -4510,10 +4604,19 @@
         }
 
         function openFloatingBrewModal() {
+            closeAllMobileDrawers('types');
             renderCategoryCardsHTML();
             const modal = document.getElementById('floatingBrewModal');
             modal.classList.remove('hidden');
             modal.classList.add('flex');
+            updateMobileNavHighlight();
+        }
+
+        function closeFloatingBrewModal() {
+            const modal = document.getElementById('floatingBrewModal');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+            updateMobileNavHighlight();
         }
 
         function closeFloatingBrewModal() {
@@ -5240,7 +5343,18 @@
             const backdropWrap = document.getElementById('previewBackdropWrap');
             const mainCard = document.getElementById('magicItemCard');
             const mainWrap = document.getElementById('mainCardScaleWrap');
+            const mainDlBar = document.getElementById('mainCardPageDownloadBar');
             const contWraps = Array.from(document.querySelectorAll('#continuationCardsContainer .cont-card-scale-wrap'));
+            const contDlBars = Array.from(document.querySelectorAll('#continuationCardsContainer .cont-card-dl-bar'));
+
+            // Show or hide the Main Card's per-page download bar depending on whether there are multiple cards
+            if (mainDlBar) {
+                mainDlBar.classList.toggle('hidden', contWraps.length === 0);
+                mainDlBar.style.width = '0px';
+            }
+            contDlBars.forEach(bar => {
+                bar.style.width = '0px';
+            });
 
             // 1. Temporarily collapse scale wrappers so unscaled 520px/760px cards cannot inflate the parent container width
             if (mainWrap) {
@@ -5270,16 +5384,20 @@
                 const cardW = mainCard.offsetWidth || getCanonicalCardWidth();
                 const cardH = mainCard.offsetHeight || 500;
                 const scale = cardW > availW ? (availW / cardW) : 1;
+                const scaledW = (cardW * scale).toFixed(2);
                 if (scale < 0.999) {
                     mainCard.style.transformOrigin = 'top left';
                     mainCard.style.transform = `scale(${scale})`;
-                    mainWrap.style.width = `${(cardW * scale).toFixed(2)}px`;
+                    mainWrap.style.width = `${scaledW}px`;
                     mainWrap.style.height = `${(cardH * scale).toFixed(2)}px`;
                 } else {
                     mainCard.style.transformOrigin = 'top left';
                     mainCard.style.transform = '';
                     mainWrap.style.width = `${cardW}px`;
                     mainWrap.style.height = `${cardH}px`;
+                }
+                if (mainDlBar) {
+                    mainDlBar.style.width = `${scaledW}px`;
                 }
             }
 
@@ -5291,16 +5409,21 @@
                 const cW = card.offsetWidth || getCanonicalCardWidth();
                 const cH = card.offsetHeight || 500;
                 const scale = cW > availW ? (availW / cW) : 1;
+                const scaledW = (cW * scale).toFixed(2);
                 if (scale < 0.999) {
                     card.style.transformOrigin = 'top left';
                     card.style.transform = `scale(${scale})`;
-                    wrap.style.width = `${(cW * scale).toFixed(2)}px`;
+                    wrap.style.width = `${scaledW}px`;
                     wrap.style.height = `${(cH * scale).toFixed(2)}px`;
                 } else {
                     card.style.transformOrigin = 'top left';
                     card.style.transform = '';
                     wrap.style.width = `${cW}px`;
                     wrap.style.height = `${cH}px`;
+                }
+                const dlBar = wrap.parentElement?.querySelector('.cont-card-dl-bar');
+                if (dlBar) {
+                    dlBar.style.width = `${scaledW}px`;
                 }
             });
         }
@@ -5680,12 +5803,14 @@
         }
 
         function openStylePickerModal() {
+            closeAllMobileDrawers('styles');
             renderStyleGalleryHTML('all');
             syncMixMatchControlsFromState();
             const modal = document.getElementById('stylePickerModal');
             if (!modal) return;
             modal.classList.remove('hidden');
             modal.classList.add('flex');
+            updateMobileNavHighlight();
         }
 
         function closeStylePickerModal() {
@@ -5693,6 +5818,22 @@
             if (!modal) return;
             modal.classList.add('hidden');
             modal.classList.remove('flex');
+            updateMobileNavHighlight();
+        }
+        function toggleVaultModal(forceState) {
+            const modal = document.getElementById('vaultModal');
+            const isHidden = modal.classList.contains('hidden');
+            const shouldOpen = typeof forceState === 'boolean' ? forceState : isHidden;
+            if (shouldOpen) {
+                closeAllMobileDrawers('deck');
+                renderVaultList();
+                modal.classList.remove('hidden');
+                modal.classList.add('flex');
+            } else {
+                modal.classList.add('hidden');
+                modal.classList.remove('flex');
+            }
+            updateMobileNavHighlight();
         }
 
         function filterStyleGallery(cat) {
@@ -6698,6 +6839,24 @@
             const showCorners = mixMatchState.corners === 'show' ? true : (mixMatchState.corners === 'hide' ? false : presetBookends);
             const cornerClass = ctxData.cornerStyle === 'rounded' ? 'card-corners-rounded' : 'card-corners-sharp';
 
+            const cardIndexInAll = 1 + contContainer.children.length;
+
+            const itemGroup = document.createElement('div');
+            itemGroup.className = 'w-full flex flex-col items-center gap-1.5';
+
+            const dlBar = document.createElement('div');
+            dlBar.className = 'cont-card-dl-bar flex items-center justify-between gap-2 px-1 mx-auto';
+            dlBar.innerHTML = `
+                <span class="text-[11px] font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
+                    <span class="w-2 h-2 rounded-full bg-amber-400"></span>
+                    <span>Card Back</span>
+                </span>
+                <button type="button" onclick="downloadSingleCardByIndex(${cardIndexInAll}, this)" class="btn-press px-2.5 py-1 rounded-lg bg-[#151822] hover:bg-amber-500/20 text-amber-300 border border-amber-500/40 text-xs font-semibold flex items-center gap-1.5 shadow" title="Download Card Back PNG">
+                    <i data-lucide="download" class="w-3.5 h-3.5"></i>
+                    <span>Download Card Back</span>
+                </button>
+            `;
+
             const scaleWrap = document.createElement('div');
             scaleWrap.className = 'cont-card-scale-wrap relative block shrink-0 mx-auto';
 
@@ -6763,7 +6922,10 @@
             `;
 
             scaleWrap.appendChild(backCard);
-            contContainer.appendChild(scaleWrap);
+            itemGroup.appendChild(dlBar);
+            itemGroup.appendChild(scaleWrap);
+            contContainer.appendChild(itemGroup);
+            lucide.createIcons();
         }
 
         function applyMultiCardPagination(ctxData) {
@@ -6885,10 +7047,19 @@
                 if (targetCardEl.scrollHeight > spec.height + 2) return true;
                 const footer = targetCardEl.querySelector('.card-footer-bar');
                 const bodyWrap = targetCardEl.querySelector('#mainCardTopBodyWrap, .cont-card-body-wrap');
+                if (bodyWrap && bodyWrap.scrollHeight > bodyWrap.clientHeight + 2) {
+                    return true;
+                }
                 if (footer && bodyWrap && !footer.classList.contains('hidden') && !footer.classList.contains('invisible')) {
                     const fRect = footer.getBoundingClientRect();
                     const bRect = bodyWrap.getBoundingClientRect();
                     if (bRect.bottom > fRect.top + 1) return true;
+                    const contentNodes = bodyWrap.querySelectorAll('#mainCardHeaderRow, #mainCardDetailsGroup, #previewDescription, #previewFlavorContainer, #artBottomCenter, .cont-desc, .cont-flavor, .cont-details-wrap');
+                    for (const node of contentNodes) {
+                        if (node.classList.contains('hidden') || node.style.display === 'none') continue;
+                        const nRect = node.getBoundingClientRect();
+                        if (nRect.height > 0 && nRect.bottom > fRect.top - 1) return true;
+                    }
                 }
                 return false;
             }
@@ -7145,6 +7316,24 @@
             let pendingDetails = moveDetailsToNextCard;
 
             while (pendingFullHeader || pendingSubtitle || pendingDetails || queue.length > 0 || flavorOnContinuation) {
+                const cardIndexInAll = 1 + contContainer.children.length;
+
+                const itemGroup = document.createElement('div');
+                itemGroup.className = 'w-full flex flex-col items-center gap-1.5';
+
+                const dlBar = document.createElement('div');
+                dlBar.className = 'cont-card-dl-bar flex items-center justify-between gap-2 px-1 mx-auto';
+                dlBar.innerHTML = `
+                    <span class="text-[11px] font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
+                        <span class="w-2 h-2 rounded-full bg-amber-400"></span>
+                        <span>Page ${pageIndex} • Continuation</span>
+                    </span>
+                    <button type="button" onclick="downloadSingleCardByIndex(${cardIndexInAll}, this)" class="btn-press px-2.5 py-1 rounded-lg bg-[#151822] hover:bg-amber-500/20 text-amber-300 border border-amber-500/40 text-xs font-semibold flex items-center gap-1.5 shadow" title="Download Page ${pageIndex} PNG">
+                        <i data-lucide="download" class="w-3.5 h-3.5"></i>
+                        <span>Download Page ${pageIndex}</span>
+                    </button>
+                `;
+
                 const scaleWrap = document.createElement('div');
                 scaleWrap.className = 'cont-card-scale-wrap relative block shrink-0 mx-auto';
 
@@ -7217,7 +7406,7 @@
                 contCard.innerHTML = `
                     ${topBarHtml}
                     <div class="px-6 pt-5 pb-2.5 flex-1 flex flex-col justify-between min-h-0 relative z-10">
-                        <div class="cont-card-body-wrap w-full pb-2.5">
+                        <div class="cont-card-body-wrap w-full pb-2.5 flex-auto min-h-0 overflow-hidden">
                             ${headerHtml}
                             ${detailsInjectedHtml}
                             <div class="cont-desc ${colClass} dmg-prose font-5e-body leading-[1.44] space-y-2.5" style="font-size: calc(16.5px * ${ctxData.descScale || 1});"></div>
@@ -7235,7 +7424,9 @@
                 `;
 
                 scaleWrap.appendChild(contCard);
-                contContainer.appendChild(scaleWrap);
+                itemGroup.appendChild(dlBar);
+                itemGroup.appendChild(scaleWrap);
+                contContainer.appendChild(itemGroup);
                 const contDescEl = contCard.querySelector('.cont-desc');
                 const contFlavorEl = contCard.querySelector('.cont-flavor');
 
@@ -7294,6 +7485,7 @@
                 countBadge.classList.remove('hidden');
                 countBadge.textContent = `${totalCards} ${totalCards === 1 ? 'Card' : 'Cards'} (${spec.label})`;
             }
+            lucide.createIcons();
             applyResponsivePreviewScale();
         }
         // Copy Discord Markdown (# ◆ for Title, -# *Subtitle* for italic Subtitle, separating line under details)
@@ -7966,6 +8158,52 @@
             } finally {
                 if (btn) {
                     btn.innerHTML = origHtml;
+                    lucide.createIcons();
+                }
+            }
+        }
+
+        // Downloads a single specific card page (e.g. Page 1, Page 2, or Card Back) for mobile browsers that throttle multi-file downloads
+        async function downloadSingleCardByIndex(cardIndex, btnEl) {
+            const origHtml = btnEl ? btnEl.innerHTML : '';
+            if (btnEl) {
+                btnEl.innerHTML = `<i data-lucide="loader-2" class="w-3.5 h-3.5 animate-spin"></i> <span>Saving...</span>`;
+                lucide.createIcons();
+            }
+            try {
+                const baseSlug = (document.getElementById('itemName').value || 'dnd-card').toLowerCase().replace(/[^a-z0-9]+/g, '-');
+                const { canvases, cardRoles, dataUrls } = await generateAllCardsCanvases();
+                const targetCanvas = canvases[cardIndex];
+                if (!targetCanvas) return;
+
+                const role = cardRoles && cardRoles[cardIndex] ? cardRoles[cardIndex] : 'face';
+                let suffix = '';
+                if (canvases.length > 1) {
+                    suffix = role === 'card-back' ? '-card-back' : `-page-${cardIndex + 1}`;
+                }
+
+                const blob = await new Promise(resolve => targetCanvas.toBlob(resolve, 'image/png'));
+                const downloadUrl = blob ? URL.createObjectURL(blob) : dataUrls[cardIndex];
+
+                const link = document.createElement('a');
+                link.style.display = 'none';
+                link.download = `${baseSlug}${suffix}.png`;
+                link.href = downloadUrl;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+
+                if (blob && downloadUrl) {
+                    setTimeout(() => URL.revokeObjectURL(downloadUrl), 15000);
+                }
+
+                const label = role === 'card-back' ? 'Card Back' : `Page ${cardIndex + 1}`;
+                showToast(`${label} Downloaded!`, `Saved ${baseSlug}${suffix}.png to your device.`);
+            } catch (e) {
+                showToast("Export Error", "Unable to render page image.");
+            } finally {
+                if (btnEl) {
+                    btnEl.innerHTML = origHtml;
                     lucide.createIcons();
                 }
             }
