@@ -1338,7 +1338,7 @@
                         </div>
 
                         <!-- Divider & Rule Color -->
-                        <div class="p-2.5 rounded-lg bg-[#080a0f] border border-slate-800 flex items-center justify-between gap-2 sm:col-span-2">
+                        <div class="p-2.5 rounded-lg bg-[#080a0f] border border-slate-800 flex items-center justify-between gap-2">
                             <label class="flex items-center gap-2 cursor-pointer text-xs text-slate-200 font-medium">
                                 <input type="checkbox" id="mmUseRuleColor" onchange="applyMixMatchFromUI()" class="w-4 h-4 accent-amber-500 rounded">
                                 <span>Custom Divider Color</span>
@@ -1346,6 +1346,18 @@
                             <div class="flex items-center gap-1.5 shrink-0">
                                 <input type="color" id="mmRuleColorPicker" value="#3b82f6" oninput="document.getElementById('mmRuleColorHex').value = this.value; document.getElementById('mmUseRuleColor').checked = true; applyMixMatchFromUI()" class="w-7 h-7 shrink-0 rounded cursor-pointer bg-transparent border-0 p-0">
                                 <input type="text" id="mmRuleColorHex" value="#3b82f6" oninput="if(/^#[0-9A-Fa-f]{6}$/.test(this.value)){document.getElementById('mmRuleColorPicker').value=this.value;} document.getElementById('mmUseRuleColor').checked = true; applyMixMatchFromUI()" class="w-20 px-2 py-1 rounded bg-[#121622] border border-slate-700 text-xs font-mono text-slate-200">
+                            </div>
+                        </div>
+
+                        <!-- Page Number Color (Defaults to Body Color) -->
+                        <div class="p-2.5 rounded-lg bg-[#080a0f] border border-slate-800 flex items-center justify-between gap-2">
+                            <label class="flex items-center gap-2 cursor-pointer text-xs text-slate-200 font-medium" title="Defaults to following the card's body text color when unchecked">
+                                <input type="checkbox" id="mmUsePageNumColor" onchange="applyMixMatchFromUI()" class="w-4 h-4 accent-amber-500 rounded">
+                                <span>Custom Page # Color</span>
+                            </label>
+                            <div class="flex items-center gap-1.5 shrink-0">
+                                <input type="color" id="mmPageNumColorPicker" value="#fdf1dc" oninput="document.getElementById('mmPageNumColorHex').value = this.value; document.getElementById('mmUsePageNumColor').checked = true; applyMixMatchFromUI()" class="w-7 h-7 shrink-0 rounded cursor-pointer bg-transparent border-0 p-0">
+                                <input type="text" id="mmPageNumColorHex" value="#fdf1dc" oninput="if(/^#[0-9A-Fa-f]{6}$/.test(this.value)){document.getElementById('mmPageNumColorPicker').value=this.value;} document.getElementById('mmUsePageNumColor').checked = true; applyMixMatchFromUI()" class="w-20 px-2 py-1 rounded bg-[#121622] border border-slate-700 text-xs font-mono text-slate-200">
                             </div>
                         </div>
                     </div>
@@ -5431,6 +5443,8 @@
             bodyColor: '#1e140a',
             useRuleColor: false,
             ruleColor: '#3b82f6',
+            usePageNumColor: false,
+            pageNumColor: '#fdf1dc',
             bgMode: 'preset', // 'preset' | 'transparent' | 'borrow' | 'solid' | 'gradient'
             borrowBgStyle: 'parchment',
             bgColor1: '#1b1626',
@@ -5453,6 +5467,7 @@
                 mixMatchState.useTitleColor ||
                 mixMatchState.useBodyColor ||
                 mixMatchState.useRuleColor ||
+                mixMatchState.usePageNumColor ||
                 mixMatchState.bgMode !== 'preset' ||
                 mixMatchState.borderStyle !== 'preset' ||
                 mixMatchState.useBorderColor ||
@@ -5515,6 +5530,9 @@
             setChk('mmUseRuleColor', mixMatchState.useRuleColor);
             setVal('mmRuleColorPicker', mixMatchState.ruleColor);
             setVal('mmRuleColorHex', mixMatchState.ruleColor);
+            setChk('mmUsePageNumColor', mixMatchState.usePageNumColor);
+            setVal('mmPageNumColorPicker', mixMatchState.pageNumColor);
+            setVal('mmPageNumColorHex', mixMatchState.pageNumColor);
             setVal('mmBgMode', mixMatchState.bgMode);
             setVal('mmBorrowBgStyle', mixMatchState.borrowBgStyle);
             setVal('mmBgColor1', mixMatchState.bgColor1);
@@ -5553,6 +5571,8 @@
             mixMatchState.bodyColor = document.getElementById('mmBodyColorHex')?.value || '#1e140a';
             mixMatchState.useRuleColor = !!document.getElementById('mmUseRuleColor')?.checked;
             mixMatchState.ruleColor = document.getElementById('mmRuleColorHex')?.value || '#3b82f6';
+            mixMatchState.usePageNumColor = !!document.getElementById('mmUsePageNumColor')?.checked;
+            mixMatchState.pageNumColor = document.getElementById('mmPageNumColorHex')?.value || '#fdf1dc';
             mixMatchState.bgMode = document.getElementById('mmBgMode')?.value || 'preset';
             mixMatchState.borrowBgStyle = document.getElementById('mmBorrowBgStyle')?.value || 'parchment';
             mixMatchState.bgColor1 = document.getElementById('mmBgColor1')?.value || '#1b1626';
@@ -6616,6 +6636,55 @@
             });
         }
 
+        // Generates a 4x Retina PNG data URL for the corner page badge where the page number defaults to the body color (or uses a custom Page # color)
+        function buildCutoutPageBadgeDataUrl(pageIndex, badgeBg, borderColor, isRounded, textColor) {
+            const scale = 4;
+            const w = 28 * scale;
+            const h = 20 * scale;
+            const rTL = 8 * scale;
+            const rBR = isRounded ? 14 * scale : 0;
+
+            const canvas = document.createElement('canvas');
+            canvas.width = w;
+            canvas.height = h;
+            const ctx = canvas.getContext('2d');
+
+            ctx.beginPath();
+            ctx.moveTo(rTL, 0);
+            ctx.lineTo(w, 0);
+            if (rBR > 0) {
+                ctx.lineTo(w, h - rBR);
+                ctx.arcTo(w, h, w - rBR, h, rBR);
+            } else {
+                ctx.lineTo(w, h);
+            }
+            ctx.lineTo(0, h);
+            ctx.lineTo(0, rTL);
+            ctx.arcTo(0, 0, rTL, 0, rTL);
+            ctx.closePath();
+
+            // 1. Fill badge tab with accent/rule color
+            ctx.fillStyle = badgeBg || '#922610';
+            ctx.fill();
+
+            // 2. Draw top & left border along the badge tab
+            ctx.save();
+            ctx.clip();
+            ctx.strokeStyle = borderColor || badgeBg || '#922610';
+            ctx.lineWidth = 1.25 * scale;
+            ctx.stroke();
+            ctx.restore();
+
+            // 3. Draw the page number using the resolved Page # Color (defaults to card body color)
+            ctx.fillStyle = textColor || '#1E140A';
+            ctx.font = `900 ${11 * scale}px "Cinzel", Georgia, serif`;
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText(String(pageIndex), w / 2, (h / 2) + (0.5 * scale));
+
+            return canvas.toDataURL('image/png');
+        }
+
         function appendCardBackIfEnabled(ctxData, contContainer, spec) {
             const includeBack = document.getElementById('includeCardBack')?.checked || document.getElementById('miniIncludeCardBack')?.checked;
             if (!includeBack) return;
@@ -6633,6 +6702,7 @@
             scaleWrap.className = 'cont-card-scale-wrap relative block shrink-0 mx-auto';
 
             const backCard = document.createElement('article');
+            backCard.setAttribute('data-card-role', 'card-back');
             backCard.className = `homebrew-continuation-card theme-${currentTheme} ${cornerClass} relative transition-colors duration-200 overflow-hidden select-text flex flex-col justify-between shrink-0`;
             backCard.style.width = `${backW}px`;
             backCard.style.minWidth = `${backW}px`;
@@ -6785,23 +6855,7 @@
                 return;
             }
 
-            // Fixed height per card page
-            cardEl.style.height = `${spec.height}px`;
-            cardEl.style.minHeight = `${spec.height}px`;
-            cardEl.style.aspectRatio = `${spec.width} / ${spec.height}`;
-
-            const descEl = document.getElementById('previewDescription');
-            const flavorCont = document.getElementById('previewFlavorContainer');
-            const hasFlavor = !!ctxData.flavor;
-            const hasBannerArt = !bannerTop.classList.contains('hidden');
-            const hasBottomArt = !bottomArtBox.classList.contains('hidden');
-            const hasBottomBleedArt = bottomBleedSlot && !bottomBleedSlot.classList.contains('hidden');
-            const hasSideLeftArt = sideLeftSlot && !sideLeftSlot.classList.contains('hidden');
-            const hasSideRightArt = sideRightSlot && !sideRightSlot.classList.contains('hidden');
-            const hasFloatArt = !floatRightBox.classList.contains('hidden');
-            const hadAnyArtVisible = hasBannerArt || hasBottomArt || hasBottomBleedArt || hasSideLeftArt || hasSideRightArt || hasFloatArt;
-
-            // If preview panel is currently hidden on mobile, temporarily reveal offscreen for accurate height measurement
+            // Ensure preview panel is measurable even when user is on mobile Edit tab
             const previewPanel = document.getElementById('mobilePreviewPanel');
             const wasHidden = previewPanel.classList.contains('hidden');
             if (wasHidden) {
@@ -6810,29 +6864,37 @@
                 previewPanel.style.position = 'fixed';
                 previewPanel.style.left = '-9999px';
                 previewPanel.style.top = '0';
-                previewPanel.style.width = `${Math.max(spec.width + 48, 820)}px`;
+                previewPanel.style.width = '820px';
             }
 
-            // Strict overflow check that also protects the footer line's exact default position & margin
-            function isCardOverflowing(el) {
-                if (el.scrollHeight > el.clientHeight + 1) return true;
-                const footer = el.querySelector('.card-footer-bar');
-                const bodyWrap = el.querySelector('#mainCardTopBodyWrap, .cont-card-body-wrap');
-                if (footer && !footer.classList.contains('hidden') && bodyWrap && !bodyWrap.classList.contains('hidden')) {
+            cardEl.style.height = `${spec.height}px`;
+            cardEl.style.minHeight = `${spec.height}px`;
+
+            const descEl = document.getElementById('previewDescription');
+            const flavorCont = document.getElementById('previewFlavorContainer');
+            const hasFlavor = Boolean(ctxData.flavor);
+            const hasBottomArt = !bottomArtBox.classList.contains('hidden');
+            const hasBottomBleedArt = bottomBleedSlot && !bottomBleedSlot.classList.contains('hidden');
+            const hasFloatArt = !floatRightBox.classList.contains('hidden');
+            const hasBannerArt = !bannerTop.classList.contains('hidden');
+            const hasSideLeftArt = sideLeftSlot && !sideLeftSlot.classList.contains('hidden');
+            const hasSideRightArt = sideRightSlot && !sideRightSlot.classList.contains('hidden');
+            const hadAnyArtVisible = hasBottomArt || hasBottomBleedArt || hasFloatArt || hasBannerArt || hasSideLeftArt || hasSideRightArt;
+
+            function isCardOverflowing(targetCardEl) {
+                if (targetCardEl.scrollHeight > spec.height + 2) return true;
+                const footer = targetCardEl.querySelector('.card-footer-bar');
+                const bodyWrap = targetCardEl.querySelector('#mainCardTopBodyWrap, .cont-card-body-wrap');
+                if (footer && bodyWrap && !footer.classList.contains('hidden') && !footer.classList.contains('invisible')) {
                     const fRect = footer.getBoundingClientRect();
                     const bRect = bodyWrap.getBoundingClientRect();
-                    if (bRect.bottom > fRect.top - 4) return true;
+                    if (bRect.bottom > fRect.top + 1) return true;
                 }
                 return false;
             }
 
-            // STEP 1: Standard Mode — check if ALL content fits on Main Card without disrupting the footer
+            // STEP 1: In Standard Mode (nothing checked in checklist), if everything fits on 1 card, keep it on 1 card!
             if (!isChecklistActive) {
-                descEl.innerHTML = parse5eMarkdown(ctxData.rawDesc || '');
-                if (hasFlavor) flavorCont.style.display = 'flex';
-                if (hasBottomArt) bottomArtBox.classList.remove('hidden');
-                if (hasBottomBleedArt) bottomBleedSlot.classList.remove('hidden');
-
                 if (!isCardOverflowing(cardEl)) {
                     appendCardBackIfEnabled(ctxData, contContainer, spec);
                     if (wasHidden) {
@@ -7069,7 +7131,13 @@
             const colClass = ctxData.isWideSpread ? 'book-columns-2' : '';
             const styleMeta = STYLE_CATALOG.find(s => s.id === currentTheme);
             const badgeBg = ctxData.ruleColor;
-            const badgeTextColor = LIGHT_PARCHMENT_THEMES.includes(currentTheme) ? '#FDF1DC' : '#0b0d13';
+            const badgeBorderColor = mixMatchState.useBorderColor
+                ? mixMatchState.borderColor
+                : (styleMeta ? styleMeta.border : ctxData.ruleColor);
+            const computedBodyColor = window.getComputedStyle(cardEl).color || '#1E140A';
+            const resolvedPageNumColor = mixMatchState.usePageNumColor
+                ? mixMatchState.pageNumColor
+                : (mixMatchState.useBodyColor ? mixMatchState.bodyColor : computedBodyColor);
 
             let pageIndex = 2;
             let pendingFullHeader = moveFullHeaderToNextCard;
@@ -7090,7 +7158,7 @@
                 contCard.style.setProperty('--rarity-color', cardEl.style.getPropertyValue('--rarity-color'));
 
                 const topBarHtml = showBookends ? `<div class="w-full h-2.5 bg-gradient-to-r from-[#8B6F36] via-[#E5C985] to-[#8B6F36] border-b border-[#58180D] shrink-0"></div>` : '';
-                const botBarHtml = showBookends ? `<div class="w-full h-2.5 bg-gradient-to-r from-[#8B6F36] via-[#E5C985] to-[#8B6F36] border-t border-[#58180D] shrink-0"></div>` : '';
+                const botBarHtml = showBookends ? `<div class="w-[calc(100%-26px)] h-2.5 bg-gradient-to-r from-[#8B6F36] via-[#E5C985] to-[#8B6F36] border-t border-[#58180D] shrink-0"></div>` : '';
 
                 // Titles on additional card pages ALWAYS stay single line and truncate with "..."
                 let headerHtml = '';
@@ -7136,8 +7204,14 @@
                 const detailsInjectedHtml = pendingDetails ? `<div class="cont-details-wrap mb-2">${detailsHtmlSnapshot}</div>` : '';
                 pendingDetails = false;
 
-                // Corner-hugging page number badge at the very bottom-right edge, styled to match the card
-                const cornerRadiusBadge = ctxData.cornerStyle === 'rounded' ? 'rounded-tl-lg rounded-br-[14px]' : 'rounded-tl-md';
+                // Corner-hugging page number badge (defaults to card body color, or uses Custom Page # Color if set in Mix & Match)
+                const cutoutBadgeUrl = buildCutoutPageBadgeDataUrl(
+                    pageIndex,
+                    badgeBg,
+                    badgeBorderColor,
+                    ctxData.cornerStyle === 'rounded',
+                    resolvedPageNumColor
+                );
 
                 // Inner padding and footer bar match #mainCardInnerPadding and #mainCardFooterBar 1:1
                 contCard.innerHTML = `
@@ -7157,9 +7231,7 @@
                         </div>
                     </div>
                     ${botBarHtml}
-                    <div class="page-num-badge card-title font-5e-title absolute bottom-0 right-0 z-30 px-2 py-0.5 ${cornerRadiusBadge} font-black text-[11px] leading-tight tracking-wider shadow-md select-none pointer-events-none flex items-center justify-center" style="background-color: ${badgeBg}; color: ${badgeTextColor}; border-top: 1px solid ${styleMeta ? styleMeta.border : ctxData.ruleColor}; border-left: 1px solid ${styleMeta ? styleMeta.border : ctxData.ruleColor};">
-                        ${pageIndex}
-                    </div>
+                    <img src="${cutoutBadgeUrl}" alt="Page ${pageIndex}" class="page-num-badge absolute bottom-0 right-0 z-30 w-[28px] h-[20px] shadow-md select-none pointer-events-none block">
                 `;
 
                 scaleWrap.appendChild(contCard);
@@ -7716,12 +7788,14 @@
             const allCardElements = [mainCard, ...contCards];
 
             const canvases = [];
+            const cardRoles = [];
             try {
                 for (const el of allCardElements) {
                     const layerPack = await captureCardLayersForExport(el, scaleOverride);
                     const renderedCanvas = compositeCardFrameFromLayers(layerPack, customFrameSource);
                     el.style.transform = layerPack.savedTransform;
                     canvases.push(renderedCanvas);
+                    cardRoles.push(el.getAttribute('data-card-role') || 'face');
                 }
             } finally {
                 if (wasHidden) {
@@ -7756,7 +7830,7 @@
                 }
             }
 
-            return { canvases, combinedCanvas, dataUrls };
+            return { canvases, cardRoles, combinedCanvas, dataUrls };
         }
 
         async function generateCardBlob() {
@@ -7848,19 +7922,52 @@
         }
 
         async function downloadCardPNG() {
+            const btn = document.getElementById('btnDownloadMain');
+            const origHtml = btn ? btn.innerHTML : '';
+            if (btn) {
+                btn.innerHTML = `<i data-lucide="loader-2" class="w-3.5 h-3.5 animate-spin"></i> <span>Downloading...</span>`;
+                lucide.createIcons();
+            }
             try {
                 const baseSlug = (document.getElementById('itemName').value || 'dnd-card').toLowerCase().replace(/[^a-z0-9]+/g, '-');
-                const { dataUrls } = await generateAllCardsCanvases();
-                dataUrls.forEach((url, idx) => {
+                const { canvases, cardRoles, dataUrls } = await generateAllCardsCanvases();
+
+                for (let idx = 0; idx < canvases.length; idx++) {
+                    const role = cardRoles && cardRoles[idx] ? cardRoles[idx] : 'face';
+                    let suffix = '';
+                    if (canvases.length > 1) {
+                        suffix = role === 'card-back' ? `-card-back` : `-card-${idx + 1}`;
+                    }
+
+                    const blob = await new Promise(resolve => canvases[idx].toBlob(resolve, 'image/png'));
+                    const downloadUrl = blob ? URL.createObjectURL(blob) : dataUrls[idx];
+
                     const link = document.createElement('a');
-                    const suffix = dataUrls.length > 1 ? `-card-${idx + 1}` : '';
+                    link.style.display = 'none';
                     link.download = `${baseSlug}${suffix}.png`;
-                    link.href = url;
+                    link.href = downloadUrl;
+                    document.body.appendChild(link);
                     link.click();
-                });
-                showToast("PNG Downloaded!", dataUrls.length > 1 ? `Saved ${dataUrls.length} cards to your device.` : "Saved to your device's Downloads.");
+                    document.body.removeChild(link);
+
+                    if (blob && downloadUrl) {
+                        setTimeout(() => URL.revokeObjectURL(downloadUrl), 15000);
+                    }
+
+                    // Stagger multi-card downloads slightly so mobile & desktop browsers never throttle or drop the final Card-Back file
+                    if (idx < canvases.length - 1) {
+                        await new Promise(r => setTimeout(r, 320));
+                    }
+                }
+
+                showToast("PNG Downloaded!", canvases.length > 1 ? `Saved all ${canvases.length} cards to your device.` : "Saved to your device's Downloads.");
             } catch (e) {
                 showToast("Export Error", "Unable to render image. Check external image CORS.");
+            } finally {
+                if (btn) {
+                    btn.innerHTML = origHtml;
+                    lucide.createIcons();
+                }
             }
         }
 
