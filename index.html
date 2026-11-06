@@ -5594,18 +5594,18 @@
 
             // 1. Fonts
             if (mixMatchState.titleFont !== 'preset') {
-                rules.push(`${cardSel} .card-title, ${cardSel} .dmg-prose h3, ${cardSel} .dmg-prose h4 { font-family: ${mixMatchState.titleFont} !important; }`);
+                rules.push(`#magicItemCard .card-title, .homebrew-continuation-card .card-title, #magicItemCard .dmg-prose h3, .homebrew-continuation-card .dmg-prose h3, #magicItemCard .dmg-prose h4, .homebrew-continuation-card .dmg-prose h4 { font-family: ${mixMatchState.titleFont} !important; }`);
             }
             if (mixMatchState.bodyFont !== 'preset') {
-                rules.push(`${cardSel}, ${cardSel} .font-5e-body, ${cardSel} .card-subtitle, ${cardSel} .dmg-prose { font-family: ${mixMatchState.bodyFont} !important; }`);
+                rules.push(`#magicItemCard, .homebrew-continuation-card, #magicItemCard .font-5e-body, .homebrew-continuation-card .font-5e-body, #magicItemCard .card-subtitle, .homebrew-continuation-card .card-subtitle, #magicItemCard .dmg-prose, .homebrew-continuation-card .dmg-prose { font-family: ${mixMatchState.bodyFont} !important; }`);
             }
 
             // 2. Colors
             if (mixMatchState.useTitleColor) {
-                rules.push(`${cardSel} .card-title, ${cardSel} .dmg-prose h3, ${cardSel} .dmg-prose h4 { color: ${mixMatchState.titleColor} !important; }`);
+                rules.push(`#magicItemCard .card-title, .homebrew-continuation-card .card-title, #magicItemCard .dmg-prose h3, .homebrew-continuation-card .dmg-prose h3, #magicItemCard .dmg-prose h4, .homebrew-continuation-card .dmg-prose h4 { color: ${mixMatchState.titleColor} !important; }`);
             }
             if (mixMatchState.useBodyColor) {
-                rules.push(`${cardSel}, ${cardSel} .card-subtitle, ${cardSel} .dmg-prose, ${cardSel} #previewFlavorText { color: ${mixMatchState.bodyColor} !important; }`);
+                rules.push(`#magicItemCard, .homebrew-continuation-card, #magicItemCard .card-subtitle, .homebrew-continuation-card .card-subtitle, #magicItemCard .dmg-prose, .homebrew-continuation-card .dmg-prose, #magicItemCard #previewFlavorText, .homebrew-continuation-card .cont-flavor p { color: ${mixMatchState.bodyColor} !important; }`);
             }
 
             // 3. Background Mode
