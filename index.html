@@ -175,10 +175,10 @@
             opacity: 1;
         }
 
-        /* Layering: Watercolor-masked Image Area sits right under Card Text layers */
+        /* Layering: Background (0) -> Scribbles (1) -> Bookends/Corners (2) -> Card Border (3) -> Image (8) -> Card Contents (15) */
         .card-art-layer-under-text {
             position: relative;
-            z-index: 5;
+            z-index: 8;
         }
         .card-text-layer-above-art {
             position: relative;
@@ -280,9 +280,11 @@
 
         .card-corners-sharp {
             border-radius: 2px;
+            clip-path: inset(0 round 2px);
         }
         .card-corners-rounded {
             border-radius: 16px;
+            clip-path: inset(0 round 16px);
         }
 
         .card-footer-bar {
@@ -384,6 +386,44 @@
             touch-action: none;
             outline: 2px dashed rgba(245, 158, 11, 0.75);
             outline-offset: -2px;
+        }
+
+        /* ==========================================
+           CUSTOM ARCANE DIAMOND-IN-SQUARE CHECKBOXES
+           Empty runic square when unchecked -> Filled glowing gold diamond when checked
+           ========================================== */
+        input[type="checkbox"] {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 1.15rem;
+            height: 1.15rem;
+            border-radius: 0.32rem;
+            border: 1.5px solid #475569;
+            background-color: #090b10;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpolygon points='8,3.2 12.8,8 8,12.8 3.2,8' fill='none' stroke='%23475569' stroke-width='1.2' opacity='0.45'/%3E%3C/svg%3E");
+            background-position: center;
+            background-repeat: no-repeat;
+            background-size: 100% 100%;
+            cursor: pointer;
+            display: inline-grid;
+            place-content: center;
+            vertical-align: middle;
+            flex-shrink: 0;
+            transition: border-color 0.18s ease, background-color 0.18s ease, box-shadow 0.18s ease, transform 0.15s cubic-bezier(0.22, 1, 0.36, 1);
+            box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.65);
+        }
+        input[type="checkbox"]:hover {
+            border-color: #f59e0b;
+            box-shadow: 0 0 8px rgba(245, 158, 11, 0.22), inset 0 1px 3px rgba(0, 0, 0, 0.65);
+        }
+        input[type="checkbox"]:active {
+            transform: scale(0.9);
+        }
+        input[type="checkbox"]:checked {
+            border-color: #fbbf24;
+            background-color: rgba(245, 158, 11, 0.16);
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpolygon points='8,2.2 13.8,8 8,13.8 2.2,8' fill='%23f59e0b' stroke='%23fef3c7' stroke-width='0.9'/%3E%3Cpolygon points='8,4.6 11.4,8 8,11.4 4.6,8' fill='%23fde68a' opacity='0.65'/%3E%3C/svg%3E");
+            box-shadow: 0 0 12px rgba(245, 158, 11, 0.32), inset 0 0 6px rgba(245, 158, 11, 0.2);
         }
 
         /* ==========================================
@@ -2325,10 +2365,10 @@
                             <div>
                                 <label class="block text-xs text-amber-300 font-semibold mb-1">Watercolor Stain Edge</label>
                                 <select id="watercolorEdgeMode" onchange="processCustomArtFade()" class="w-full px-3 py-2 rounded-lg bg-[#0b0d13] border border-slate-700 text-slate-200 text-xs">
-                                    <option value="all" selected>Fade All 4 Edges</option>
+                                    <option value="all">Fade All 4 Edges</option>
                                     <option value="none">No Edge Fade (Crisp Edges)</option>
                                     <optgroup label="Single Edge">
-                                        <option value="bottom">Bottom Edge Only</option>
+                                        <option value="bottom" selected>Bottom Edge Only</option>
                                         <option value="top">Top Edge Only</option>
                                         <option value="left">Left Edge Only</option>
                                         <option value="right">Right Edge Only</option>
@@ -2713,9 +2753,12 @@
                     </div>
 
                     <div id="mainCardScaleWrap" class="relative block shrink-0 mx-auto">
-                        <article id="magicItemCard" class="theme-parchment card-corners-sharp relative w-[520px] transition-colors duration-200 overflow-hidden select-text flex flex-col justify-between shrink-0">
+                        <article id="magicItemCard" class="theme-parchment card-corners-sharp relative w-[520px] overflow-hidden select-text flex flex-col justify-between shrink-0">
+                        <!-- CARD LINE BORDER LAYER (Used when a full-bleed image is active so the border sits underneath the artwork) -->
+                        <div id="cardBorderLayer" class="hidden pointer-events-none absolute inset-0 z-[3]" style="border-radius: inherit;"></div>
+
                         <!-- TOP ORNATE 5E BOOKEND BORDER -->
-                        <div id="topBookBorder" class="w-full h-2.5 bg-gradient-to-r from-[#8B6F36] via-[#E5C985] to-[#8B6F36] border-b border-[#58180D] shrink-0 relative z-20">
+                        <div id="topBookBorder" class="w-full h-2.5 bg-gradient-to-r from-[#8B6F36] via-[#E5C985] to-[#8B6F36] border-b border-[#58180D] shrink-0 relative z-[2]">
                             <svg class="w-full h-full opacity-55 block" preserveAspectRatio="none" viewBox="0 0 800 10">
                                 <defs>
                                     <pattern id="greekKey" x="0" y="0" width="20" height="10" patternUnits="userSpaceOnUse">
@@ -2727,19 +2770,19 @@
                         </div>
 
                         <!-- DECORATIVE CORNER FLOURISHES -->
-                        <svg id="cornerFlourishTL" class="w-6 h-6 absolute top-3.5 left-2.5 text-[#8B6F36] opacity-55 pointer-events-none z-20" viewBox="0 0 24 24" fill="none">
+                        <svg id="cornerFlourishTL" class="w-6 h-6 absolute top-3.5 left-2.5 text-[#8B6F36] opacity-55 pointer-events-none z-[2]" viewBox="0 0 24 24" fill="none">
                             <path d="M2 22V6C2 3.79086 3.79086 2 6 2H22" stroke="currentColor" stroke-width="1.8"/>
                             <path d="M6 18V8C6 6.89 6.89 6 8 6H18" stroke="currentColor" stroke-width="1"/>
                             <circle cx="6" cy="6" r="2" fill="currentColor"/>
                         </svg>
-                        <svg id="cornerFlourishTR" class="w-6 h-6 absolute top-3.5 right-2.5 text-[#8B6F36] opacity-55 pointer-events-none z-20" viewBox="0 0 24 24" fill="none">
+                        <svg id="cornerFlourishTR" class="w-6 h-6 absolute top-3.5 right-2.5 text-[#8B6F36] opacity-55 pointer-events-none z-[2]" viewBox="0 0 24 24" fill="none">
                             <path d="M22 22V6C22 3.79086 20.2091 2 18 2H2" stroke="currentColor" stroke-width="1.8"/>
                             <path d="M18 18V8C18 6.89 17.11 6 16 6H6" stroke="currentColor" stroke-width="1"/>
                             <circle cx="18" cy="6" r="2" fill="currentColor"/>
                         </svg>
 
                         <!-- ANCIENT SCRIBBLES MARGINALIA & INK SPLATTER OVERLAY -->
-                        <svg id="scribbleOverlay" class="hidden w-full h-full absolute inset-0 pointer-events-none z-0 opacity-35" viewBox="0 0 500 650" fill="none">
+                        <svg id="scribbleOverlay" class="hidden w-full h-full absolute inset-0 pointer-events-none z-[1] opacity-35" viewBox="0 0 500 650" fill="none">
                             <circle cx="420" cy="95" r="46" stroke="#5C3A18" stroke-width="2.5" stroke-dasharray="90 12 45 8" opacity="0.5"/>
                             <circle cx="423" cy="97" r="43" stroke="#5C3A18" stroke-width="1" opacity="0.35"/>
                             <circle cx="65" cy="540" r="5" fill="#2C1A0B" opacity="0.55"/>
@@ -2754,16 +2797,16 @@
                             </g>
                         </svg>
 
+                        <!-- FULL-CARD IMAGE ONLY OVERLAY (Used when Main Card Mode === 'full-art'; sits ON TOP of border & decorations) -->
+                        <div id="mainCardFullArtOnlyWrap" class="hidden watercolor-masked-area absolute inset-0 z-[8] w-full h-full overflow-hidden"></div>
+
                         <!-- HORIZONTAL SPLIT WRAPPER (Supports Full Left Side / Full Right Side Artwork Columns) -->
                         <div id="mainCardSideSplitWrap" class="flex-1 flex flex-row items-stretch min-h-0 relative z-10 w-full">
-                            <!-- FULL LEFT SIDE ARTWORK SLOT (Layered right under card text) -->
+                            <!-- FULL LEFT SIDE ARTWORK SLOT (Layered on top of border/decorations & right under card text) -->
                             <div id="artSideLeftSlot" class="hidden card-art-layer-under-text watercolor-masked-area shrink-0 relative overflow-hidden flex items-center justify-center"></div>
 
                             <!-- INNER CARD PADDING -->
                             <div id="mainCardInnerPadding" class="px-6 pt-5 pb-2.5 relative z-10 flex-1 flex flex-col justify-between min-h-0 min-w-0">
-
-                                <!-- FULL-CARD IMAGE ONLY OVERLAY (Used when Main Card Mode === 'full-art') -->
-                                <div id="mainCardFullArtOnlyWrap" class="hidden watercolor-masked-area absolute inset-0 z-30 w-full h-full overflow-hidden"></div>
 
                                 <!-- TOP/MAIN CONTENT WRAPPER (Always aligned to top of card; shrinks before footer so footer is never pushed down) -->
                                 <div id="mainCardTopBodyWrap" class="w-full pb-2.5 relative flex-auto min-h-0">
@@ -2876,15 +2919,15 @@
                                 </div>
                             </div>
 
-                            <!-- FULL RIGHT SIDE ARTWORK SLOT (Layered right under card text) -->
+                            <!-- FULL RIGHT SIDE ARTWORK SLOT (Layered on top of border/decorations & right under card text) -->
                             <div id="artSideRightSlot" class="hidden card-art-layer-under-text watercolor-masked-area shrink-0 relative overflow-hidden flex items-center justify-center"></div>
                         </div>
 
-                        <!-- FULL-BLEED BOTTOM-CENTER IMAGE SLOT (Sits on top of footer at bottom, hiding footer, while staying under body text) -->
-                        <div id="artBottomBleedSlot" class="hidden watercolor-masked-area w-full -mt-6 m-0 p-0 shrink-0 overflow-hidden relative z-[12]"></div>
+                        <!-- FULL-BLEED BOTTOM-CENTER IMAGE SLOT (Sits on top of border, bookends & footer at bottom, while staying under body text) -->
+                        <div id="artBottomBleedSlot" class="hidden watercolor-masked-area w-full -mt-6 m-0 p-0 shrink-0 overflow-hidden relative z-[8]"></div>
 
                         <!-- BOTTOM ORNATE 5E BOOKEND BORDER -->
-                        <div id="bottomBookBorder" class="w-full h-2.5 bg-gradient-to-r from-[#8B6F36] via-[#E5C985] to-[#8B6F36] border-t border-[#58180D] shrink-0 relative z-20">
+                        <div id="bottomBookBorder" class="w-full h-2.5 bg-gradient-to-r from-[#8B6F36] via-[#E5C985] to-[#8B6F36] border-t border-[#58180D] shrink-0 relative z-[2]">
                             <svg class="w-full h-full opacity-55 block" preserveAspectRatio="none" viewBox="0 0 800 10">
                                 <rect width="800" height="10" fill="url(#greekKey)"/>
                             </svg>
@@ -3475,7 +3518,7 @@
                 pills: ["17 (natural armor)", "136 (16d10 + 48)", "40 ft., fly 60 ft. (hover)", "9 (5,000 XP) • PB +4"],
                 showCharges: false,
                 str: 18, dex: 16, con: 16, int: 14, wis: 15, cha: 19,
-                desc: `***Void Shroud.*** Magical darkness doesn't impede the dreadstalker's vision, and ranged weapon attacks made against it from more than 30 feet away have disadvantage.\n\n### Actions\n***Multiattack.*** The dreadstalker makes two Void Claw attacks and uses Gravity Pulse if available.\n\n***Void Claw.*** *Melee Weapon Attack:* +8 to hit, reach 10 ft., one target. *Hit:* 13 (2d8 + 4) slashing damage plus 9 (2d8) force damage.\n\n***Gravity Pulse (Recharge 5–6).*** The dreadstalker warps gravity in a 20-foot-radius sphere centered on itself. Each creature in that area must make a DC 16 Strength saving throw. On a failed save, a creature takes 27 (6d8) force damage and is pulled up to 15 feet toward the dreadstalker.`,
+                desc: `***Void Shroud.*** Magical darkness doesn't impede the dreadstalker's vision, and ranged weapon attacks made against it from more than 30 feet away have disadvantage.\n\n### Actions\n\n***Multiattack.*** The dreadstalker makes two Void Claw attacks and uses Gravity Pulse if available.\n\n***Void Claw.*** *Melee Weapon Attack:* +8 to hit, reach 10 ft., one target. *Hit:* 13 (2d8 + 4) slashing damage plus 9 (2d8) force damage.\n\n***Gravity Pulse (Recharge 5–6).*** The dreadstalker warps gravity in a 20-foot-radius sphere centered on itself. Each creature in that area must make a DC 16 Strength saving throw. On a failed save, a creature takes 27 (6d8) force damage and is pulled up to 15 feet toward the dreadstalker.`,
                 flavor: `"Sailors of the Silver Void know to douse their lanterns when the stars begin to blink out one by one."`
             },
             other: {
@@ -5416,7 +5459,7 @@
         // Generates the Watercolor Stain Edge Mask for the Image Area Container itself
         // Works on 100% of images (including cross-origin URLs & animated GIFs) and always follows the edges of the image area span
         function getImageAreaMaskFlags() {
-            const edgeMode = document.getElementById('watercolorEdgeMode')?.value || 'all';
+            const edgeMode = document.getElementById('watercolorEdgeMode')?.value || 'bottom';
             const isFullBleed = !!document.getElementById('artFullBleed')?.checked;
             const artLayout = document.getElementById('artLayout')?.value || 'none';
 
@@ -6112,7 +6155,9 @@
 
         function parse5eMarkdown(raw) {
             if (!raw || !raw.trim()) return '';
-            const blocks = raw.trim().split(/\n\n+/);
+            // Ensure ### and #### headers followed by a single newline still split into their own block
+            const normalized = raw.trim().replace(/^(#{3,4}\s+[^\n]+)\n(?!\n)/gm, '$1\n\n');
+            const blocks = normalized.split(/\n\n+/);
 
             return blocks.map(block => {
                 const trimmed = block.trim();
@@ -6840,24 +6885,11 @@
 
             const hasCustomArtVisible = currentArtIsCustomImg && currentArtSource && artLayout !== 'none';
 
-            // If Full-Bleed is active on Top Showcase, hide top bookend border so image literally forms the top/left/right edge of the card
-            if (hasCustomArtVisible && isFullBleed && artLayout === 'banner-top') {
-                document.getElementById('topBookBorder').style.display = 'none';
-                document.getElementById('cornerFlourishTL').style.display = 'none';
-                document.getElementById('cornerFlourishTR').style.display = 'none';
-            }
-            // If Full-Bleed is active on Bottom Center, hide bottom bookend border and layer the image over the footer so the footer is hidden
+            // Full-bleed Bottom-Center artwork sits over the footer text while keeping the outer card border & bookends on top
             if (hasCustomArtVisible && isFullBleed && artLayout === 'bottom-center') {
-                document.getElementById('bottomBookBorder').style.display = 'none';
                 if (mainFooterEl) {
                     mainFooterEl.classList.add('invisible');
                 }
-            }
-            if (hasCustomArtVisible && isFullBleed && artLayout === 'side-left') {
-                document.getElementById('cornerFlourishTL').style.display = 'none';
-            }
-            if (hasCustomArtVisible && isFullBleed && artLayout === 'side-right') {
-                document.getElementById('cornerFlourishTR').style.display = 'none';
             }
 
             const isCenteredShowcase = (artLayout === 'banner-top' || artLayout === 'bottom-center');
@@ -6874,8 +6906,11 @@
 
                 if (artLayout === 'banner-top') {
                     bannerTop.className = isFullBleed
-                        ? 'card-art-layer-under-text watercolor-masked-area -mx-6 -mt-5 w-[calc(100%+3rem)] flex justify-center items-center overflow-hidden'
+                        ? 'card-art-layer-under-text watercolor-masked-area -mx-6 w-[calc(100%+3rem)] flex justify-center items-center overflow-hidden'
                         : 'card-art-layer-under-text watercolor-masked-area w-full flex justify-center items-center overflow-hidden';
+                    if (isFullBleed) {
+                        bannerTop.style.marginTop = showBookends ? '-30px' : '-20px';
+                    }
                     bannerTop.style.height = `${spanHeightPx}px`;
                     bannerTop.style.marginBottom = `${Math.max(-36, 8 - fringeOverlapPx)}px`;
                     applyAreaMaskStyle(bannerTop, areaMaskUrl);
@@ -6885,6 +6920,10 @@
                         ? 'card-art-layer-under-text watercolor-masked-area shrink-0 relative overflow-hidden flex items-center justify-center self-stretch'
                         : 'card-art-layer-under-text watercolor-masked-area shrink-0 relative overflow-hidden flex items-center justify-center self-stretch pl-4 py-4';
                     sideLeftSlot.style.width = `${areaSpanPct}%`;
+                    if (isFullBleed && showBookends) {
+                        sideLeftSlot.style.marginTop = '-10px';
+                        sideLeftSlot.style.marginBottom = '-10px';
+                    }
                     if (fringeOverlapPx > 0) sideLeftSlot.style.marginRight = `-${Math.min(28, fringeOverlapPx)}px`;
                     applyAreaMaskStyle(sideLeftSlot, areaMaskUrl);
                     sideLeftSlot.innerHTML = artHtml;
@@ -6893,6 +6932,10 @@
                         ? 'card-art-layer-under-text watercolor-masked-area shrink-0 relative overflow-hidden flex items-center justify-center self-stretch'
                         : 'card-art-layer-under-text watercolor-masked-area shrink-0 relative overflow-hidden flex items-center justify-center self-stretch pr-4 py-4';
                     sideRightSlot.style.width = `${areaSpanPct}%`;
+                    if (isFullBleed && showBookends) {
+                        sideRightSlot.style.marginTop = '-10px';
+                        sideRightSlot.style.marginBottom = '-10px';
+                    }
                     if (fringeOverlapPx > 0) sideRightSlot.style.marginLeft = `-${Math.min(28, fringeOverlapPx)}px`;
                     applyAreaMaskStyle(sideRightSlot, areaMaskUrl);
                     sideRightSlot.innerHTML = artHtml;
@@ -6917,6 +6960,9 @@
                         bottomBleedSlot.classList.remove('hidden');
                         bottomBleedSlot.style.height = `${spanHeightPx}px`;
                         bottomBleedSlot.style.marginTop = `-${Math.max(24, 24 + fringeOverlapPx)}px`;
+                        if (showBookends) {
+                            bottomBleedSlot.style.marginBottom = '-10px';
+                        }
                         applyAreaMaskStyle(bottomBleedSlot, areaMaskUrl);
                         bottomBleedSlot.innerHTML = artHtml;
                     } else {
@@ -6979,6 +7025,9 @@
 
             const isWideSpread = document.getElementById('cardLayoutWidth')?.value === 'wide';
             document.getElementById('previewBodyColumns').classList.toggle('book-columns-2', isWideSpread);
+
+            // Sync Card Line Border Layer so non-inline images sit ON TOP of the card's line border with the exact original border color
+            syncCardBorderLayerUnderFullBleedArt(cardEl, hasCustomArtVisible && !isInlineWrap);
 
             // 11. Fixed Card Size & Multi-Card Continuation Pagination + Optional Card-Back Face
             applyMultiCardPagination({
@@ -7044,14 +7093,58 @@
             ctx.stroke();
             ctx.restore();
 
-            // 3. Draw the page number using the resolved Page # Color (defaults to card body color)
-            ctx.fillStyle = textColor || '#1E140A';
-            ctx.font = `900 ${11 * scale}px "Cinzel", Georgia, serif`;
+            // 3. Draw page number text (defaults to following the card's body color, or uses Custom Page # Color)
+            ctx.save();
+            ctx.fillStyle = textColor || '#FDF1DC';
+            ctx.font = `900 ${11 * scale}px 'Cinzel', Georgia, serif`;
             ctx.textAlign = 'center';
             ctx.textBaseline = 'middle';
-            ctx.fillText(String(pageIndex), w / 2, (h / 2) + (0.5 * scale));
+            ctx.fillText(String(pageIndex), w / 2 + (0.5 * scale), h / 2 + (0.8 * scale));
+            ctx.restore();
 
             return canvas.toDataURL('image/png');
+        }
+
+        // Moves the card's exact computed CSS border onto #cardBorderLayer (z-[3]) whenever a non-inline image is active on the card,
+        // so full-bleed / scaled artwork (z-[8]/z-10) paints right over the line border out to the card's outer edge while keeping the exact original border color.
+        function syncCardBorderLayerUnderFullBleedArt(cardEl, shouldPlaceBorderUnderArt) {
+            const borderLayer = document.getElementById('cardBorderLayer');
+            if (!cardEl || !borderLayer) return;
+
+            // Disable CSS transitions before restoring native border so getComputedStyle never reads currentColor (text color) mid-transition
+            cardEl.style.setProperty('transition', 'none', 'important');
+            cardEl.style.removeProperty('border');
+            cardEl.style.removeProperty('border-color');
+            cardEl.style.removeProperty('border-width');
+            cardEl.style.removeProperty('border-style');
+            borderLayer.classList.add('hidden');
+
+            if (!shouldPlaceBorderUnderArt) {
+                void cardEl.offsetWidth;
+                cardEl.style.removeProperty('transition');
+                return;
+            }
+
+            // Force synchronous style recalculation so getComputedStyle reads the true theme / Mix & Match border color
+            void cardEl.offsetWidth;
+            const cs = window.getComputedStyle(cardEl);
+            borderLayer.style.borderTopWidth = cs.borderTopWidth;
+            borderLayer.style.borderTopStyle = cs.borderTopStyle;
+            borderLayer.style.borderTopColor = cs.borderTopColor;
+            borderLayer.style.borderRightWidth = cs.borderRightWidth;
+            borderLayer.style.borderRightStyle = cs.borderRightStyle;
+            borderLayer.style.borderRightColor = cs.borderRightColor;
+            borderLayer.style.borderBottomWidth = cs.borderBottomWidth;
+            borderLayer.style.borderBottomStyle = cs.borderBottomStyle;
+            borderLayer.style.borderBottomColor = cs.borderBottomColor;
+            borderLayer.style.borderLeftWidth = cs.borderLeftWidth;
+            borderLayer.style.borderLeftStyle = cs.borderLeftStyle;
+            borderLayer.style.borderLeftColor = cs.borderLeftColor;
+
+            borderLayer.classList.remove('hidden');
+            cardEl.style.setProperty('border', 'none', 'important');
+            void cardEl.offsetWidth;
+            cardEl.style.removeProperty('transition');
         }
 
         function appendCardBackIfEnabled(ctxData, contContainer, spec) {
@@ -7382,16 +7475,12 @@
                 : false;
 
             if (chkFullImage) {
-                // Full Image checked: Main Card is 100% full-bleed artwork (no footer, no header, no text)
+                // Full Image checked: Main Card is 100% full-bleed artwork (no footer, no header, no text), framed underneath the card's border & ornaments
                 topBodyWrap.classList.add('hidden');
                 mainFooterBar.classList.add('hidden');
                 if (bottomBleedSlot) bottomBleedSlot.classList.add('hidden');
                 if (sideLeftSlot) sideLeftSlot.classList.add('hidden');
                 if (sideRightSlot) sideRightSlot.classList.add('hidden');
-                topBookBorder.style.display = 'none';
-                bottomBookBorder.style.display = 'none';
-                cornerTL.style.display = 'none';
-                cornerTR.style.display = 'none';
 
                 fullArtWrap.classList.remove('hidden');
                 if (currentArtIsCustomImg && currentArtSource) {
@@ -7421,6 +7510,7 @@
                 } else {
                     fullArtWrap.innerHTML = `<div class="w-full h-full flex items-center justify-center p-6 text-center opacity-60 font-5e-title text-lg">${ctxData.name}</div>`;
                 }
+                syncCardBorderLayerUnderFullBleedArt(cardEl, true);
                 moveFullHeaderToNextCard = true;
                 moveDetailsToNextCard = hasAnyDetailsVisible;
             } else if (isChecklistActive) {
@@ -7442,6 +7532,7 @@
                     if (sideLeftSlot) sideLeftSlot.classList.add('hidden');
                     if (sideRightSlot) sideRightSlot.classList.add('hidden');
                     if (mainFooterBar) mainFooterBar.classList.remove('invisible');
+                    syncCardBorderLayerUnderFullBleedArt(cardEl, false);
                     moveArtToNextCard = hadAnyArtVisible;
                 }
 
@@ -8000,61 +8091,91 @@
             const savedTransform = el.style.transform;
             el.style.transform = 'none';
 
-            const exactW = Math.ceil(el.offsetWidth || getCanonicalCardWidth());
-            const exactH = Math.ceil(Math.max(el.offsetHeight, el.scrollHeight));
+            const exactW = Math.round(el.offsetWidth || parseFloat(el.style.width) || getCanonicalCardWidth());
+            const exactH = Math.round(el.offsetHeight || parseFloat(el.style.height) || 500);
 
-            const maskedSlots = Array.from(el.querySelectorAll('.watercolor-masked-area')).filter(
-                s => !s.classList.contains('hidden') && s.querySelector('img')
-            );
+            const allSlots = Array.from(el.querySelectorAll('.watercolor-masked-area'));
+            const maskedSlots = allSlots.filter(slot => {
+                if (slot.classList.contains('hidden') || slot.style.display === 'none') return false;
+                const img = slot.querySelector('img');
+                return Boolean(img && img.getAttribute('src'));
+            });
 
-            // Temporarily swap raw <img> src with a 1x1 transparent pixel & clear CSS mask during DOM snapshot
-            // so html-to-image / html2canvas NEVER chokes on large GIFs or external URLs!
-            const hiddenSlotState = [];
-            for (const slot of maskedSlots) {
+            // Temporarily hide raw <img> inside masked slots while capturing the Base and Foreground DOM layers
+            const hiddenSlotState = maskedSlots.map(slot => {
                 const imgNode = slot.querySelector('img');
-                hiddenSlotState.push({
-                    slot,
-                    origWebkitMask: slot.style.webkitMaskImage,
-                    origMask: slot.style.maskImage,
-                    imgNode,
-                    origVis: imgNode ? imgNode.style.visibility : '',
-                    origSrc: imgNode ? imgNode.getAttribute('src') : ''
-                });
+                const origWebkitMask = slot.style.webkitMaskImage;
+                const origMask = slot.style.maskImage;
+                const origSrc = imgNode ? imgNode.getAttribute('src') : '';
+                const origVis = imgNode ? imgNode.style.visibility : '';
                 slot.style.webkitMaskImage = '';
                 slot.style.maskImage = '';
                 if (imgNode) {
-                    imgNode.style.visibility = 'hidden';
                     imgNode.setAttribute('src', TRANSPARENT_1PX);
+                    imgNode.style.visibility = 'hidden';
                 }
-            }
+                return { slot, imgNode, origWebkitMask, origMask, origSrc, origVis };
+            });
 
-            // 1. Capture Base Card (Background + Borders + Text)
+            // 1. Capture Base Card (Background + Decorations + Original Card Border + Text)
             const baseCanvas = await renderDomNodeToCanvas(el, exactW, exactH, scaleOverride);
 
-            // 2. If there is a visible artwork slot (not Full-Card Art Only), capture Foreground Text & Border Layer on transparent background
+            // 2. If there is any visible artwork slot, capture Foreground Contents Layer (Text & Content ONLY)
+            //    Makes the border transparent and hides background/decorations on fgCanvas so the image sits ON TOP of the border & decorations!
             let fgCanvas = null;
-            const hasUnderTextSlot = maskedSlots.some(s => s.id !== 'mainCardFullArtOnlyWrap');
-            if (hasUnderTextSlot) {
+            if (maskedSlots.length > 0) {
+                const artLayout = document.getElementById('artLayout')?.value || 'none';
+                const isFullCardArt = maskedSlots.some(s => s.id === 'mainCardFullArtOnlyWrap');
+                const isInlineOnly = !isFullCardArt && (artLayout === 'float-left' || artLayout === 'float-right');
+
                 const origBg = el.style.background;
                 const origShadow = el.style.boxShadow;
-                const origBorderColor = el.style.borderColor;
+                const origBorder = el.style.getPropertyValue('border');
+                const origBorderPriority = el.style.getPropertyPriority('border');
                 const scribble = el.querySelector('#scribbleOverlay');
-                const origScribbleVis = scribble ? scribble.style.visibility : '';
-                const isFullBleed = !!document.getElementById('artFullBleed')?.checked;
+                const topBook = el.querySelector('#topBookBorder');
+                const botBook = el.querySelector('#bottomBookBorder');
+                const cornerTL = el.querySelector('#cornerFlourishTL');
+                const cornerTR = el.querySelector('#cornerFlourishTR');
+                const borderLayer = el.querySelector('#cardBorderLayer');
 
+                const origScribbleVis = scribble ? scribble.style.visibility : '';
+                const origTopBookVis = topBook ? topBook.style.visibility : '';
+                const origBotBookVis = botBook ? botBook.style.visibility : '';
+                const origCornerTLVis = cornerTL ? cornerTL.style.visibility : '';
+                const origCornerTRVis = cornerTR ? cornerTR.style.visibility : '';
+                const origBorderLayerVis = borderLayer ? borderLayer.style.visibility : '';
+
+                el.style.setProperty('transition', 'none', 'important');
                 el.style.setProperty('background', 'transparent', 'important');
                 el.style.setProperty('box-shadow', 'none', 'important');
-                if (isFullBleed) {
-                    el.style.setProperty('border-color', 'transparent', 'important');
-                }
                 if (scribble) scribble.style.visibility = 'hidden';
+
+                if (!isInlineOnly) {
+                    el.style.setProperty('border', 'none', 'important');
+                    if (borderLayer) borderLayer.style.visibility = 'hidden';
+                    if (topBook) topBook.style.visibility = 'hidden';
+                    if (botBook) botBook.style.visibility = 'hidden';
+                    if (cornerTL) cornerTL.style.visibility = 'hidden';
+                    if (cornerTR) cornerTR.style.visibility = 'hidden';
+                }
 
                 fgCanvas = await renderDomNodeToCanvas(el, exactW, exactH, scaleOverride);
 
                 el.style.background = origBg;
                 el.style.boxShadow = origShadow;
-                el.style.borderColor = origBorderColor;
+                if (origBorder) {
+                    el.style.setProperty('border', origBorder, origBorderPriority);
+                } else {
+                    el.style.removeProperty('border');
+                }
+                el.style.removeProperty('transition');
+                if (borderLayer) borderLayer.style.visibility = origBorderLayerVis;
                 if (scribble) scribble.style.visibility = origScribbleVis;
+                if (topBook) topBook.style.visibility = origTopBookVis;
+                if (botBook) botBook.style.visibility = origBotBookVis;
+                if (cornerTL) cornerTL.style.visibility = origCornerTLVis;
+                if (cornerTR) cornerTR.style.visibility = origCornerTRVis;
             }
 
             // Restore DOM state
@@ -8101,19 +8222,13 @@
             outCanvas.height = baseCanvas.height;
             const outCtx = outCanvas.getContext('2d');
 
-            const isTransparentTheme = isCardBackgroundTransparent();
-
-            // Step 1: Draw Card Base
-            outCtx.save();
-            if (isTransparentTheme) {
-                clipContextToCardCorners(outCtx, outCanvas.width, outCanvas.height, scaleOverride);
-            }
+            // Step 1: Draw Base Layer (Background + Decorations + Original Border)
             outCtx.drawImage(baseCanvas, 0, 0);
 
             const blendEl = document.getElementById('artBlendMultiply');
             const useMultiply = blendEl && blendEl.checked && LIGHT_PARCHMENT_THEMES.includes(currentTheme);
 
-            // Step 2: Draw each Watercolor-Masked Artwork Slot directly onto the canvas
+            // Step 2: Draw each Watercolor-Masked Artwork Slot ON TOP of the Background, Decorations & Border
             const prevTransform = el.style.transform;
             el.style.transform = 'none';
 
@@ -8128,8 +8243,8 @@
                 outCtx.drawImage(artPatch.canvas, artPatch.relX, artPatch.relY, artPatch.w, artPatch.h);
                 outCtx.restore();
 
-                // Step 3: Restore any Foreground Text that sits above the artwork fringes
-                if (fgCanvas && !artPatch.isFullCardArt) {
+                // Step 3: Draw Card Contents (Text/Headers/Dividers) ON TOP of the artwork
+                if (fgCanvas) {
                     const textPatch = document.createElement('canvas');
                     textPatch.width = artPatch.w;
                     textPatch.height = artPatch.h;
@@ -8147,16 +8262,17 @@
                 }
             }
 
-            // Step 4: Use the rendered card (baseCanvas) itself as the exact outer silhouette mask so full-bleed corners match the card edge 1:1
-            if (!isTransparentTheme) {
-                outCtx.globalCompositeOperation = 'destination-in';
-                outCtx.drawImage(baseCanvas, 0, 0);
-                outCtx.globalCompositeOperation = 'source-over';
-            }
-
-            outCtx.restore();
+            // Step 4: Always clip the final composited card (including full-bleed images) to the exact sharp (2px) or rounded (16px) corner radius
+            const clippedCanvas = document.createElement('canvas');
+            clippedCanvas.width = outCanvas.width;
+            clippedCanvas.height = outCanvas.height;
+            const cCtx = clippedCanvas.getContext('2d');
+            cCtx.save();
+            clipContextToCardCorners(cCtx, clippedCanvas.width, clippedCanvas.height, scaleOverride);
+            cCtx.drawImage(outCanvas, 0, 0);
+            cCtx.restore();
             el.style.transform = prevTransform;
-            return outCanvas;
+            return clippedCanvas;
         }
 
         async function generateAllCardsCanvases(scaleOverride = 2, customFrameSource = null) {
