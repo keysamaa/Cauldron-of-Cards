@@ -138,6 +138,15 @@
             animation: viewSlideIn 0.26s cubic-bezier(0.22, 1, 0.36, 1) forwards;
         }
 
+        /* Seamless Chosen Card Morph + Bottom Bar Slide-Up */
+        @keyframes bottomNavSlideUp {
+            0% { opacity: 0; transform: translateY(58px) scale(0.95); }
+            100% { opacity: 1; transform: translateY(0) scale(1); }
+        }
+        .animate-bottom-nav-slide {
+            animation: bottomNavSlideUp 0.46s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+        }
+
         /* Quick Floating Preview Backdrop Blur & Dim Transition */
         #quickPreviewOverlay {
             background-color: rgba(8, 10, 15, 0);
@@ -187,24 +196,27 @@
         /* ==========================================
            CINEMATIC OPENING INTRO ANIMATION
            ========================================== */
-        #landingHub.intro-playing .landing-hero-box {
-            min-height: 78dvh;
+        #landingHub .landing-hero-box {
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            transition: all 0.65s cubic-bezier(0.22, 1, 0.36, 1);
+            transform: translateY(0) scale(1);
+            transition: transform 1.55s cubic-bezier(0.19, 1, 0.22, 1);
+            will-change: transform;
+        }
+        #landingHub.intro-playing .landing-hero-box {
+            transform: translateY(calc(34dvh - 50%)) scale(1.06);
         }
         #landingHub.intro-slide-up .landing-hero-box,
         #landingHub.intro-finished .landing-hero-box {
-            min-height: 0;
-            transition: all 0.65s cubic-bezier(0.22, 1, 0.36, 1);
+            transform: translateY(0) scale(1);
         }
         #introTitleWrap {
             opacity: 0;
-            transform: scale(0.84) translateY(14px);
-            filter: blur(8px);
-            transition: opacity 0.65s cubic-bezier(0.22, 1, 0.36, 1), transform 0.65s cubic-bezier(0.22, 1, 0.36, 1), filter 0.65s cubic-bezier(0.22, 1, 0.36, 1);
+            transform: scale(0.86) translateY(18px);
+            filter: blur(10px);
+            transition: opacity 1.25s cubic-bezier(0.16, 1, 0.3, 1), transform 1.25s cubic-bezier(0.16, 1, 0.3, 1), filter 1.25s cubic-bezier(0.16, 1, 0.3, 1);
         }
         #introTitleWrap.intro-step-visible {
             opacity: 1;
@@ -213,23 +225,44 @@
         }
         #introSubWrap {
             opacity: 0;
-            transform: translateY(10px);
-            transition: opacity 0.5s cubic-bezier(0.22, 1, 0.36, 1), transform 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+            transform: translateY(14px);
+            filter: blur(4px);
+            transition: opacity 1.05s cubic-bezier(0.16, 1, 0.3, 1), transform 1.05s cubic-bezier(0.16, 1, 0.3, 1), filter 1.05s cubic-bezier(0.16, 1, 0.3, 1);
         }
         #introSubWrap.intro-step-visible {
             opacity: 1;
             transform: translateY(0);
+            filter: blur(0px);
         }
         #introCardsSection {
             opacity: 0;
-            transform: translateY(28px);
             pointer-events: none;
-            transition: opacity 0.55s cubic-bezier(0.22, 1, 0.36, 1), transform 0.55s cubic-bezier(0.22, 1, 0.36, 1);
+            transition: opacity 0.6s cubic-bezier(0.16, 1, 0.3, 1);
         }
         #introCardsSection.intro-step-visible {
             opacity: 1;
-            transform: translateY(0);
             pointer-events: auto;
+        }
+        #introCardsHeaderBar {
+            opacity: 0;
+            transform: translateY(12px);
+            transition: opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1), transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        #introCardsSection.intro-step-visible #introCardsHeaderBar {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        #landingCategoryGrid .landing-cat-tile {
+            opacity: 0;
+            transform: translateY(20px) scale(0.96);
+            filter: blur(4px);
+            transition: opacity 0.75s cubic-bezier(0.16, 1, 0.3, 1), transform 0.75s cubic-bezier(0.16, 1, 0.3, 1), filter 0.75s cubic-bezier(0.16, 1, 0.3, 1), background-color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+        }
+        #landingCategoryGrid .landing-cat-tile.cat-tile-visible,
+        #landingHub.intro-finished #landingCategoryGrid .landing-cat-tile {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+            filter: blur(0px);
         }
 
         /* ==========================================
@@ -1164,7 +1197,7 @@
          CAULDRON OF CARDS — FULL-PAGE LANDING HUB
          ========================================== -->
     <div id="landingHub" onclick="handleLandingHubClick(event)" class="intro-playing fixed inset-0 z-50 bg-[#080a0f] overflow-y-auto flex flex-col justify-between p-4 sm:p-8 select-none">
-        <div class="max-w-5xl w-full mx-auto my-auto py-4 sm:py-8 flex flex-col items-center">
+        <div class="max-w-5xl w-full mx-auto mt-2 sm:mt-6 mb-auto py-4 sm:py-6 flex flex-col items-center">
             <!-- Hero Header with Subtle Radial Glow Behind Logo -->
             <div class="landing-hero-box text-center max-w-2xl mx-auto mb-6 sm:mb-8 relative">
                 <div class="pointer-events-none absolute -inset-x-16 -inset-y-10 bg-[radial-gradient(ellipse_at_center,rgba(245,158,11,0.18)_0%,rgba(139,92,246,0.08)_45%,transparent_75%)] blur-2xl -z-10"></div>
@@ -1186,7 +1219,7 @@
 
             <!-- 12 Homebrew Card Category Grid -->
             <div id="introCardsSection" class="w-full space-y-4">
-                <div class="flex items-center justify-between px-1">
+                <div id="introCardsHeaderBar" class="flex items-center justify-between px-1">
                     <span class="text-xs font-bold uppercase tracking-widest text-amber-400/90">Choose What to Brew</span>
                     <button type="button" onclick="closeLandingHub()" class="btn-press text-xs text-slate-400 hover:text-amber-300 flex items-center gap-1">
                         <span>Continue to Current Card</span>
@@ -2883,7 +2916,7 @@
          MOBILE FLOATING BOTTOM NAVIGATION BAR (Raised above phone gesture area)
          Order: Types | Edit | Export (Centerpiece) | Styles | Deck
          ========================================== -->
-    <nav style="margin-bottom: env(safe-area-inset-bottom, 4px);" class="lg:hidden fixed bottom-3 left-3 right-3 z-[60] bg-[#10131c]/95 backdrop-blur-md border border-slate-700/90 rounded-2xl px-2 py-1.5 flex items-center justify-around shadow-[0_14px_34px_rgba(0,0,0,0.85)]">
+    <nav id="mobileBottomNav" style="margin-bottom: env(safe-area-inset-bottom, 4px);" class="hidden lg:hidden fixed bottom-3 left-3 right-3 z-[60] bg-[#10131c]/95 backdrop-blur-md border border-slate-700/90 rounded-2xl px-2 py-1.5 items-center justify-around shadow-[0_14px_34px_rgba(0,0,0,0.85)]">
         <button type="button" onclick="toggleMobileDrawerTab('types')" id="mobNav-types" class="btn-press flex-1 py-1.5 rounded-xl flex flex-col items-center gap-0.5 text-slate-400 font-medium transition">
             <i data-lucide="layout-grid" class="w-5 h-5"></i>
             <span class="text-[11px]">Types</span>
@@ -3131,7 +3164,7 @@
         function renderCategoryCardsHTML() {
             const html = BREW_CARD_LIST.map(c => {
                 return `
-                <button onclick="selectCardCategory('${c.key}')" class="btn-press group text-left p-4 rounded-xl border-slate-800 bg-[#141824]/90 hover:bg-[#1a2030] hover:border-amber-500/50 border transition-all flex items-start gap-3.5 shadow-lg">
+                <button type="button" data-cat-key="${c.key}" onclick="handleCategoryCardClick('${c.key}', this)" class="landing-cat-tile btn-press relative overflow-visible group text-left p-4 rounded-xl border-slate-800 bg-[#141824]/90 hover:bg-[#1a2030] hover:border-amber-500/50 border transition-all flex items-start gap-3.5 shadow-lg">
                     <div class="w-11 h-11 rounded-lg bg-amber-500/15 border border-amber-500/30 flex items-center justify-center text-amber-400 shrink-0 group-hover:scale-105 transition">
                         <i data-lucide="${c.icon}" class="w-5 h-5"></i>
                     </div>
@@ -3155,38 +3188,83 @@
         let introAnimTimers = [];
         let isIntroPlaying = false;
 
-        function startOpeningIntroAnimation() {
+        function resetIntroAnimationState() {
+            introAnimTimers.forEach(t => clearTimeout(t));
+            introAnimTimers = [];
+            const hub = document.getElementById('landingHub');
+            const heroBox = hub ? hub.querySelector('.landing-hero-box') : null;
+            const titleWrap = document.getElementById('introTitleWrap');
+            const subWrap = document.getElementById('introSubWrap');
+            const cardsSec = document.getElementById('introCardsSection');
+            const catTiles = hub ? Array.from(hub.querySelectorAll('#landingCategoryGrid .landing-cat-tile')) : [];
+            if (!hub || !titleWrap || !subWrap || !cardsSec) return;
+
+            if (heroBox) heroBox.style.transition = 'none';
+            titleWrap.style.transition = 'none';
+            subWrap.style.transition = 'none';
+            cardsSec.style.transition = 'none';
+            catTiles.forEach(tile => {
+                tile.style.transition = 'none';
+                tile.classList.remove('cat-tile-visible');
+            });
+
+            hub.classList.remove('intro-finished', 'intro-slide-up');
+            hub.classList.add('intro-playing');
+            titleWrap.classList.remove('intro-step-visible');
+            subWrap.classList.remove('intro-step-visible');
+            cardsSec.classList.remove('intro-step-visible');
+
+            void hub.offsetWidth;
+
+            if (heroBox) heroBox.style.transition = '';
+            titleWrap.style.transition = '';
+            subWrap.style.transition = '';
+            cardsSec.style.transition = '';
+            catTiles.forEach(tile => {
+                tile.style.transition = '';
+            });
+        }
+
+        function startOpeningIntroAnimation(baseDelay = 0) {
             const hub = document.getElementById('landingHub');
             const titleWrap = document.getElementById('introTitleWrap');
             const subWrap = document.getElementById('introSubWrap');
             const cardsSec = document.getElementById('introCardsSection');
             if (!hub || !titleWrap || !subWrap || !cardsSec) return;
 
+            resetIntroAnimationState();
             isIntroPlaying = true;
-            hub.classList.remove('intro-finished', 'intro-slide-up');
-            hub.classList.add('intro-playing');
 
-            // Step 1: Expensive dynamic fade-zoom of "Cauldron of Cards" dead-center
+            const catTiles = Array.from(hub.querySelectorAll('#landingCategoryGrid .landing-cat-tile'));
+
+            // Step 1: Slow, atmospheric fade-zoom of "Cauldron of Cards" dead-center
             introAnimTimers.push(setTimeout(() => {
                 titleWrap.classList.add('intro-step-visible');
-            }, 60));
+            }, baseDelay + 180));
 
-            // Step 2: Tagline "Brew the pot. Deal the deck." & "A little tool by @keysama" fade in
+            // Step 2: Tagline "Stir thy pots, defy the gods." & "A little tool by @keysama" gently rise in
             introAnimTimers.push(setTimeout(() => {
                 subWrap.classList.add('intro-step-visible');
-            }, 680));
+            }, baseDelay + 1200));
 
-            // Step 3: Hero slides up from center while card types pop into view
+            // Step 3: Title, subtitle & badge smoothly glide up into place while each card type appears one by one
             introAnimTimers.push(setTimeout(() => {
                 hub.classList.remove('intro-playing');
                 hub.classList.add('intro-slide-up');
                 cardsSec.classList.add('intro-step-visible');
-            }, 1350));
 
-            // Mark finished
+                catTiles.forEach((tile, idx) => {
+                    introAnimTimers.push(setTimeout(() => {
+                        tile.classList.add('cat-tile-visible');
+                    }, 220 + idx * 115));
+                });
+            }, baseDelay + 2300));
+
+            // Step 4: Mark finished after the last card type finishes its reveal
+            const totalDuration = baseDelay + 2300 + 220 + (catTiles.length * 115) + 800;
             introAnimTimers.push(setTimeout(() => {
                 finishIntroAnimationImmediately();
-            }, 2100));
+            }, totalDuration));
         }
 
         function finishIntroAnimationImmediately() {
@@ -3198,8 +3276,13 @@
             const subWrap = document.getElementById('introSubWrap');
             const cardsSec = document.getElementById('introCardsSection');
             if (hub) {
+                hub.style.transition = '';
+                hub.style.opacity = '';
                 hub.classList.remove('intro-playing', 'intro-slide-up');
                 hub.classList.add('intro-finished');
+                hub.querySelectorAll('#landingCategoryGrid .landing-cat-tile').forEach(tile => {
+                    tile.classList.add('cat-tile-visible');
+                });
             }
             if (titleWrap) titleWrap.classList.add('intro-step-visible');
             if (subWrap) subWrap.classList.add('intro-step-visible');
@@ -3208,6 +3291,13 @@
 
         function handleLandingHubClick(event) {
             if (isIntroPlaying) {
+                const hub = document.getElementById('landingHub');
+                const clickedButton = event.target.closest('button');
+                // If the hero is already gliding up and the user clicks a visible card button, let the click proceed
+                if (hub && hub.classList.contains('intro-slide-up') && clickedButton) {
+                    finishIntroAnimationImmediately();
+                    return;
+                }
                 event.stopPropagation();
                 event.preventDefault();
                 finishIntroAnimationImmediately();
@@ -4590,17 +4680,159 @@
         // ==========================================
         // CAULDRON OF CARDS LANDING HUB, FLOATING BREW MODAL & CATEGORY SWITCHER
         // ==========================================
-        function openLandingHub() {
-            renderCategoryCardsHTML();
+        let isCauldronTransitioning = false;
+
+        function revealMobileBottomNav() {
+            const mobNav = document.getElementById('mobileBottomNav');
+            if (!mobNav) return;
+            mobNav.classList.remove('hidden', 'animate-bottom-nav-slide');
+            mobNav.classList.add('flex');
+            void mobNav.offsetWidth;
+            mobNav.classList.add('animate-bottom-nav-slide');
+        }
+
+        function handleCategoryCardClick(catKey, btnEl) {
+            const landingGrid = document.getElementById('landingCategoryGrid');
+            const isFromLandingHub = btnEl && landingGrid && landingGrid.contains(btnEl);
+
+            if (!isFromLandingHub) {
+                selectCardCategory(catKey);
+                return;
+            }
+
+            if (isCauldronTransitioning) return;
+            isCauldronTransitioning = true;
             finishIntroAnimationImmediately();
-            document.getElementById('landingHub').classList.remove('hidden');
-            document.getElementById('landingHub').classList.add('flex');
+
+            const hub = document.getElementById('landingHub');
+            const startRect = btnEl.getBoundingClientRect();
+
+            // 1. Prepare the chosen category and activate the Edit tab underneath
+            window.scrollTo({ top: 0, behavior: 'instant' });
+            selectCardCategory(catKey, { deferHubClose: true });
+            switchMobileView('edit');
+
+            const editorPanel = document.getElementById('mobileEditorPanel');
+            const targetRect = editorPanel ? editorPanel.getBoundingClientRect() : startRect;
+
+            // 2. Create a floating morph shell starting at the exact clicked card coordinates
+            const morphShell = document.createElement('div');
+            morphShell.style.position = 'fixed';
+            morphShell.style.zIndex = '55';
+            morphShell.style.left = `${startRect.left}px`;
+            morphShell.style.top = `${startRect.top}px`;
+            morphShell.style.width = `${startRect.width}px`;
+            morphShell.style.height = `${startRect.height}px`;
+            morphShell.style.borderRadius = '12px';
+            morphShell.style.background = '#141824';
+            morphShell.style.border = '1px solid rgba(245, 158, 11, 0.65)';
+            morphShell.style.boxShadow = '0 20px 50px -10px rgba(0, 0, 0, 0.75), 0 0 24px rgba(245, 158, 11, 0.22)';
+            morphShell.style.overflow = 'hidden';
+            morphShell.style.pointerEvents = 'none';
+            morphShell.style.padding = '16px';
+            morphShell.style.display = 'flex';
+            morphShell.style.alignItems = 'flex-start';
+            morphShell.style.gap = '14px';
+            morphShell.style.transition = 'left 0.44s cubic-bezier(0.22, 1, 0.36, 1), top 0.44s cubic-bezier(0.22, 1, 0.36, 1), width 0.44s cubic-bezier(0.22, 1, 0.36, 1), height 0.44s cubic-bezier(0.22, 1, 0.36, 1), background-color 0.44s ease, border-color 0.44s ease, opacity 0.24s ease';
+
+            const innerClone = document.createElement('div');
+            innerClone.className = 'flex items-start gap-3.5 w-full';
+            innerClone.style.transition = 'opacity 0.22s ease, transform 0.38s cubic-bezier(0.22, 1, 0.36, 1)';
+            innerClone.innerHTML = btnEl.innerHTML;
+            morphShell.appendChild(innerClone);
+            document.body.appendChild(morphShell);
+
+            btnEl.style.opacity = '0';
+
+            if (editorPanel) {
+                editorPanel.classList.remove('animate-view-switch');
+                editorPanel.style.opacity = '0';
+                editorPanel.style.transform = 'scale(0.975) translateY(8px)';
+                editorPanel.style.transition = 'opacity 0.32s cubic-bezier(0.22, 1, 0.36, 1) 0.12s, transform 0.38s cubic-bezier(0.22, 1, 0.36, 1) 0.12s';
+            }
+
+            // 3. Expand and morph the chosen card directly into the Edit panel bounds while fading out the landing hub
+            requestAnimationFrame(() => {
+                if (hub) {
+                    hub.style.transition = 'opacity 0.34s cubic-bezier(0.22, 1, 0.36, 1)';
+                    hub.style.opacity = '0';
+                }
+
+                morphShell.style.left = `${targetRect.left}px`;
+                morphShell.style.top = `${targetRect.top}px`;
+                morphShell.style.width = `${targetRect.width}px`;
+                morphShell.style.height = `${Math.max(startRect.height, Math.min(targetRect.height, 260))}px`;
+                morphShell.style.background = '#151822';
+                morphShell.style.borderColor = 'rgba(30, 41, 59, 0.9)';
+
+                innerClone.style.opacity = '0';
+                innerClone.style.transform = 'scale(1.04) translateY(-4px)';
+
+                if (editorPanel) {
+                    editorPanel.style.opacity = '1';
+                    editorPanel.style.transform = 'scale(1) translateY(0)';
+                }
+            });
+
+            setTimeout(() => {
+                morphShell.style.opacity = '0';
+            }, 220);
+
+            setTimeout(() => {
+                if (morphShell.parentNode) morphShell.parentNode.removeChild(morphShell);
+                btnEl.style.opacity = '';
+                if (hub) {
+                    hub.classList.add('hidden');
+                    hub.classList.remove('flex');
+                    hub.style.transition = '';
+                    hub.style.opacity = '';
+                }
+                if (editorPanel) {
+                    editorPanel.style.opacity = '';
+                    editorPanel.style.transform = '';
+                    editorPanel.style.transition = '';
+                }
+                isCauldronTransitioning = false;
+                revealMobileBottomNav();
+            }, 460);
+        }
+
+        function openLandingHub() {
+            isCauldronTransitioning = false;
+            closeAllMobileDrawers();
+            renderCategoryCardsHTML();
+
+            const mobNav = document.getElementById('mobileBottomNav');
+            if (mobNav) {
+                mobNav.classList.add('hidden');
+                mobNav.classList.remove('flex', 'animate-bottom-nav-slide');
+            }
+
+            const hub = document.getElementById('landingHub');
+            if (!hub) return;
+
+            resetIntroAnimationState();
+            hub.style.transition = 'none';
+            hub.style.opacity = '0';
+            hub.classList.remove('hidden');
+            hub.classList.add('flex');
+            hub.scrollTop = 0;
+
+            void hub.offsetWidth;
+
+            requestAnimationFrame(() => {
+                hub.style.transition = 'opacity 0.65s cubic-bezier(0.22, 1, 0.36, 1)';
+                hub.style.opacity = '1';
+                startOpeningIntroAnimation(380);
+            });
         }
 
         function closeLandingHub() {
             finishIntroAnimationImmediately();
             document.getElementById('landingHub').classList.add('hidden');
             document.getElementById('landingHub').classList.remove('flex');
+            switchMobileView('edit');
+            revealMobileBottomNav();
         }
 
         function openFloatingBrewModal() {
@@ -4619,12 +4851,6 @@
             updateMobileNavHighlight();
         }
 
-        function closeFloatingBrewModal() {
-            const modal = document.getElementById('floatingBrewModal');
-            modal.classList.add('hidden');
-            modal.classList.remove('flex');
-        }
-
         function triggerCardSwapAnimation() {
             const card = document.getElementById('magicItemCard');
             if (!card) return;
@@ -4633,9 +4859,11 @@
             card.classList.add('animate-card-Swap');
         }
 
-        function selectCardCategory(catKey) {
+        function selectCardCategory(catKey, options = {}) {
             currentCategory = catKey;
-            closeLandingHub();
+            if (!options.deferHubClose) {
+                closeLandingHub();
+            }
             closeFloatingBrewModal();
             triggerCardSwapAnimation();
 
@@ -8438,19 +8666,6 @@
             localStorage.setItem(VAULT_KEY, JSON.stringify(vault));
             renderVaultList();
             updateVaultBadge();
-        }
-
-        function toggleVaultModal() {
-            const modal = document.getElementById('vaultModal');
-            const isHidden = modal.classList.contains('hidden');
-            if (isHidden) {
-                renderVaultList();
-                modal.classList.remove('hidden');
-                modal.classList.add('flex');
-            } else {
-                modal.classList.add('hidden');
-                modal.classList.remove('flex');
-            }
         }
 
         function renderVaultList() {
