@@ -525,6 +525,12 @@
             border-top: 1.5px solid #26211E;
             border-bottom: 1.5px solid #26211E;
         }
+        .flavor-box > :first-child {
+            margin-top: 0 !important;
+        }
+        .flavor-box > :last-child {
+            margin-bottom: 0 !important;
+        }
 
         /* --- card style presets (1-54) --- */
         .theme-parchment {
@@ -3652,7 +3658,7 @@
             { key: 'feat', title: 'Feat', icon: 'award', desc: 'Origin, general & epic boons' },
             { key: 'item', title: 'Item', icon: 'sword', desc: 'Weapons, armor & wondrous gear' },
             { key: 'other', title: 'Other Feature', icon: 'zap', desc: 'Invocations, maneuvers & metamagic options' },
-            { key: 'race', title: 'Race', icon: 'users', desc: 'Playable lineages & innate traits' },
+            { key: 'race', title: 'Race / Species', icon: 'users', desc: 'Playable lineages & innate traits' },
             { key: 'region', title: 'Region', icon: 'castle', desc: 'Settlements, dungeons & campaign realms' },
             { key: 'spell', title: 'Spell', icon: 'wand-sparkles', desc: 'Cantrips, rituals & arcane magic' },
             { key: 'subclass', title: 'Subclass', icon: 'sparkles', desc: 'Specialized paths & archetype features' }
@@ -3801,7 +3807,7 @@
                 flavor: `"In your study of occult lore, you have unearthed Eldritch Invocations, fragments of forbidden knowledge that imbue you with an abiding magical ability." — Player's Handbook`
             },
             race: {
-                label: "Race",
+                label: "Race / Species",
                 footerTag: "5e Species / Race",
                 artKey: "lineage",
                 rarity: "rare",
@@ -5309,6 +5315,11 @@
             const end = ta.selectionEnd || ta.value.length;
             const selected = ta.value.substring(start, end);
 
+            const beforeCursor = ta.value.substring(0, start);
+            const currentLineStart = beforeCursor.lastIndexOf('\n') + 1;
+            const currentLinePrefix = beforeCursor.substring(currentLineStart);
+            const isInsideQuoteLine = /^\s*>/.test(currentLinePrefix);
+
             let snippet = '';
             if (type === 'ability') {
                 snippet = `\n\n***Feature Name.*** ${selected || 'Describe what this feature or action does...'}`;
@@ -5325,7 +5336,10 @@
             } else if (type === 'numbered') {
                 snippet = `\n\n1. ${selected || 'First step or effect'}\n2. Second step or effect`;
             } else if (type === 'quotebox') {
-                snippet = `\n\n> ${selected || 'Read-aloud lore or an official shaded rules note box...'}`;
+                const quoteBody = selected
+                    ? selected.split('\n').map(l => l.trim().startsWith('>') ? l : `> ${l}`).join('\n')
+                    : '> Read-aloud lore or an official shaded rules note box...';
+                snippet = `\n\n${quoteBody}`;
             } else if (type === 'rule') {
                 snippet = `\n\n---\n\n`;
             } else if (type === 'ruleblock') {
@@ -5336,6 +5350,14 @@
                 snippet = `\n\n| d6 | Effect |\n| 1–2 | Minor arcane surge |\n| 3–4 | Moderate planar resonance |\n| 5–6 | Major astral flare |`;
             } else if (type === 'higher') {
                 snippet = `\n\n***At Higher Levels.*** When you cast this spell using a spell slot of 4th level or higher, the damage increases by 1d8 for each slot level above 3rd.`;
+            }
+
+            if (isInsideQuoteLine && type !== 'bold' && type !== 'italic' && type !== 'quotebox') {
+                const bodyLines = snippet.replace(/^\n+/, '').replace(/\n+$/, '').split('\n');
+                const quotedLines = bodyLines.map(l => l.trim() === '' ? '>' : `> ${l}`).join('\n');
+                snippet = /^\s*>\s*$/.test(currentLinePrefix)
+                    ? quotedLines.replace(/^>\s?/, '')
+                    : `\n${quotedLines}`;
             }
 
             ta.value = ta.value.substring(0, start) + snippet + ta.value.substring(end);
@@ -7029,6 +7051,18 @@
             `;
         }
 
+        function getOneLevelSmallerScale(currentScaleStr) {
+            const idx = TEN_FONT_SIZE_OPTIONS.findIndex(opt => opt.scale === String(currentScaleStr));
+            if (idx > 0) {
+                return parseFloat(TEN_FONT_SIZE_OPTIONS[idx - 1].scale);
+            }
+            if (idx === 0) {
+                return 0.66;
+            }
+            const val = parseFloat(currentScaleStr) || 1;
+            return +(val * 0.925).toFixed(3);
+        }
+
         function parse5eMarkdown(rawText) {
             if (!rawText || !rawText.trim()) return '';
             const ruleColor = getActiveRuleColor();
@@ -7077,14 +7111,18 @@
                     continue;
                 }
 
-                // shaded note box (> ...)
+                // shaded note box (> ...) with full nested markdown support & 1-level-smaller font size
                 if (line.startsWith('>')) {
-                    const quoteLines = [];
+                    const quoteRawLines = [];
                     while (i < lines.length && lines[i].trim().startsWith('>')) {
-                        quoteLines.push(formatInline5e(lines[i].trim().replace(/^>\s?/, '')));
+                        quoteRawLines.push(lines[i].trim().replace(/^>\s?/, ''));
                         i++;
                     }
-                    out.push(`<div class="my-2 px-3 py-2 flavor-box text-[0.94em] leading-snug rounded-xs">${quoteLines.join('<br>')}</div>`);
+                    const descScaleVal = document.getElementById('fs-itemDesc')?.value || '1';
+                    const noteScale = getOneLevelSmallerScale(descScaleVal);
+                    const noteFontSizePx = (16.5 * noteScale).toFixed(1);
+                    const innerHTML = parse5eMarkdown(quoteRawLines.join('\n'));
+                    out.push(`<div class="my-2 px-3 py-2 flavor-box leading-snug rounded-xs space-y-1.5" style="font-size: ${noteFontSizePx}px;">${innerHTML}</div>`);
                     continue;
                 }
 
@@ -7454,9 +7492,10 @@
             const layoutSpread = document.getElementById('cardLayoutWidth')?.value || 'single';
 
             if (bodyCols) {
-                bodyCols.classList.toggle('book-columns-2', layoutSpread === 'wide');
+                bodyCols.classList.remove('book-columns-2');
             }
             if (previewDesc) {
+                previewDesc.classList.toggle('book-columns-2', layoutSpread === 'wide');
                 previewDesc.style.fontSize = `${(16.5 * descScale).toFixed(1)}px`;
                 previewDesc.innerHTML = parse5eMarkdown(descRaw);
             }
@@ -8252,9 +8291,9 @@
                     detailUnits.forEach((unit, idx) => {
                         const keepOnMain = !mcFullImage && !!mcDetailChecks[idx];
                         if (!keepOnMain) {
-                            overflowQueue.push(unit.segEl.outerHTML);
+                            overflowQueue.push({ kind: 'detail', html: unit.segEl.outerHTML });
                             if (unit.dividersAfter.length > 0) {
-                                overflowQueue.push(unit.dividersAfter[0].outerHTML);
+                                overflowQueue.push({ kind: 'detail', html: unit.dividersAfter[0].outerHTML });
                             }
                             unit.segEl.classList.add('hidden');
                             unit.dividersAfter.forEach(div => div.classList.add('hidden'));
@@ -8262,10 +8301,10 @@
                     });
 
                     if (previewDesc) {
-                        Array.from(previewDesc.children).forEach(ch => overflowQueue.push(ch.outerHTML));
+                        Array.from(previewDesc.children).forEach(ch => overflowQueue.push({ kind: 'prose', html: ch.outerHTML }));
                     }
                     if (savedFlavorOuterHTML) {
-                        overflowQueue.push(savedFlavorOuterHTML);
+                        overflowQueue.push({ kind: 'flavor', html: savedFlavorOuterHTML });
                     }
                 } else if (topBodyWrap && previewDesc) {
                     // Temporarily set overflow hidden for 1:1 scrollHeight vs clientHeight measurement, then restore right after
@@ -8288,11 +8327,11 @@
                                 // Hide trailing divider of the last remaining detail unit first in case the divider alone caused overflow
                                 unit.dividersAfter.forEach(div => div.classList.add('hidden'));
                                 if (fitsMainCard()) break;
-                                const unitHTML = [unit.segEl.outerHTML];
+                                const unitItems = [{ kind: 'detail', html: unit.segEl.outerHTML }];
                                 if (unit.dividersAfter.length > 0) {
-                                    unitHTML.push(unit.dividersAfter[0].outerHTML);
+                                    unitItems.push({ kind: 'detail', html: unit.dividersAfter[0].outerHTML });
                                 }
-                                movedDetails.unshift(...unitHTML);
+                                movedDetails.unshift(...unitItems);
                                 unit.segEl.classList.add('hidden');
                             }
                             overflowQueue.push(...movedDetails);
@@ -8311,7 +8350,7 @@
                                 if (!fitsMainCard()) {
                                     const remainderHTML = trySplitOverflowingNode(blockEl, fitsMainCard);
                                     if (remainderHTML) {
-                                        overflowQueue.push(remainderHTML);
+                                        overflowQueue.push({ kind: 'prose', html: remainderHTML });
                                     } else {
                                         previewDesc.removeChild(blockEl);
                                         // Avoid stranding an orphan section header or divider at the very bottom of Card 1
@@ -8321,24 +8360,24 @@
                                                 // Don't leave a divider at the bottom of the card when the next part moves to Card 2
                                                 previewDesc.removeChild(lastFit);
                                             } else if (lastFit.tagName === 'H3' || lastFit.tagName === 'H4') {
-                                                overflowQueue.push(lastFit.outerHTML);
+                                                overflowQueue.push({ kind: 'prose', html: lastFit.outerHTML });
                                                 previewDesc.removeChild(lastFit);
                                             } else {
                                                 break;
                                             }
                                         }
                                         if (!isDividerHTMLString(allDescHTML[i])) {
-                                            overflowQueue.push(allDescHTML[i]);
+                                            overflowQueue.push({ kind: 'prose', html: allDescHTML[i] });
                                         }
                                     }
                                     for (let j = i + 1; j < allDescHTML.length; j++) {
-                                        overflowQueue.push(allDescHTML[j]);
+                                        overflowQueue.push({ kind: 'prose', html: allDescHTML[j] });
                                     }
                                     break;
                                 }
                             }
                         } else {
-                            overflowQueue.push(...allDescHTML);
+                            overflowQueue.push(...allDescHTML.map(h => ({ kind: 'prose', html: h })));
                         }
 
                         // Finally, check if the flavor quote box fits at the bottom of Card 1
@@ -8347,10 +8386,10 @@
                                 flavorContainer.classList.remove('hidden');
                                 if (!fitsMainCard()) {
                                     flavorContainer.classList.add('hidden');
-                                    overflowQueue.push(savedFlavorOuterHTML);
+                                    overflowQueue.push({ kind: 'flavor', html: savedFlavorOuterHTML });
                                 }
                             } else {
-                                overflowQueue.push(savedFlavorOuterHTML);
+                                overflowQueue.push({ kind: 'flavor', html: savedFlavorOuterHTML });
                             }
                         }
                     }
@@ -8406,7 +8445,7 @@
 
             while (overflowQueue.length > 0 && nextCardNumber <= 14 && contContainer) {
                 // Strip any leading dividers at the start of a new continuation card (since the card already has its top title divider)
-                while (overflowQueue.length > 0 && isDividerHTMLString(overflowQueue[0])) {
+                while (overflowQueue.length > 0 && isDividerHTMLString(overflowQueue[0].html)) {
                     overflowQueue.shift();
                 }
                 if (overflowQueue.length === 0) break;
@@ -8414,7 +8453,7 @@
                 const pageIdx = nextCardNumber;
                 const showDeferredSubtitleOnCard2 = pageIdx === 2 && anyChecklistActive && (mcFullImage || !mcSubtitle) && subEl?.textContent?.trim();
                 const deferredSubtitleHTML = showDeferredSubtitleOnCard2
-                    ? `<p class="card-subtitle font-5e-body italic leading-snug mt-0.5" style="font-size: ${subEl.style.fontSize || '15px'};">${escapeHtmlText(subEl.textContent)}</p>`
+                    ? `<p class="card-subtitle font-5e-body italic leading-snug mt-0.5" style="font-size: ${subEl.style.fontSize || '15px'};">${subEl.innerHTML}</p>`
                     : '';
                 const contHeaderHTML = `
                     <div class="card-text-layer-above-art shrink-0">
@@ -8430,7 +8469,7 @@
                     height,
                     pageIndex: pageIdx,
                     label: `Page ${pageIdx} • Continuation Card`,
-                    bodyHTML: `${contHeaderHTML}<div class="cont-card-prose dmg-prose font-5e-body leading-[1.44] space-y-2.5 ${layoutSpread === 'wide' ? 'book-columns-2' : ''}" style="font-size: ${proseFontSize};"></div>`
+                    bodyHTML: `${contHeaderHTML}<div class="cont-card-prose dmg-prose font-5e-body leading-[1.44] space-y-2.5" style="font-size: ${proseFontSize};"></div>`
                 });
                 contContainer.appendChild(shellWrapper);
 
@@ -8441,9 +8480,20 @@
                 const fitsContCard = () => viewportEl.scrollHeight <= viewportEl.clientHeight + 1;
                 let placedCount = 0;
 
+                const getLastMeaningfulElement = () => {
+                    const lastTop = proseSlot.lastElementChild;
+                    if (!lastTop) return null;
+                    if (lastTop.classList.contains('cont-card-body-columns')) {
+                        return lastTop.lastElementChild;
+                    }
+                    return lastTop;
+                };
+
                 while (overflowQueue.length > 0) {
-                    const nextBlockHTML = overflowQueue.shift();
-                    if (isDividerHTMLString(nextBlockHTML) && proseSlot.lastElementChild && isDividerNode(proseSlot.lastElementChild)) {
+                    const nextItem = overflowQueue.shift();
+                    const nextBlockHTML = nextItem.html;
+                    const lastPlaced = getLastMeaningfulElement();
+                    if (isDividerHTMLString(nextBlockHTML) && lastPlaced && isDividerNode(lastPlaced)) {
                         continue;
                     }
                     const temp = document.createElement('div');
@@ -8451,29 +8501,56 @@
                     const blockEl = temp.firstElementChild;
                     if (!blockEl) continue;
 
-                    proseSlot.appendChild(blockEl);
+                    let targetContainer = proseSlot;
+                    let createdBodyCols = false;
+                    if (nextItem.kind === 'prose') {
+                        const lastChild = proseSlot.lastElementChild;
+                        if (lastChild && lastChild.classList.contains('cont-card-body-columns')) {
+                            targetContainer = lastChild;
+                        } else {
+                            targetContainer = document.createElement('div');
+                            targetContainer.className = `cont-card-body-columns dmg-prose font-5e-body leading-[1.44] space-y-2.5 ${layoutSpread === 'wide' ? 'book-columns-2' : ''}`;
+                            proseSlot.appendChild(targetContainer);
+                            createdBodyCols = true;
+                        }
+                    }
+
+                    targetContainer.appendChild(blockEl);
 
                     if (!fitsContCard()) {
                         const remainderHTML = trySplitOverflowingNode(blockEl, fitsContCard);
                         if (remainderHTML) {
                             placedCount++;
-                            overflowQueue.unshift(remainderHTML);
+                            overflowQueue.unshift({ kind: nextItem.kind, html: remainderHTML });
                             break;
                         } else if (placedCount > 0) {
-                            proseSlot.removeChild(blockEl);
+                            targetContainer.removeChild(blockEl);
+                            if (createdBodyCols && targetContainer.children.length === 0) {
+                                proseSlot.removeChild(targetContainer);
+                            }
                             if (!isDividerHTMLString(nextBlockHTML)) {
-                                overflowQueue.unshift(nextBlockHTML);
+                                overflowQueue.unshift(nextItem);
                             }
                             // Don't leave a lone section header or divider stranded at the bottom of a continuation card
-                            while (proseSlot.lastElementChild && proseSlot.children.length > 1) {
-                                const lastFit = proseSlot.lastElementChild;
+                            while (placedCount > 1) {
+                                const tailContainer = (proseSlot.lastElementChild && proseSlot.lastElementChild.classList.contains('cont-card-body-columns'))
+                                    ? proseSlot.lastElementChild
+                                    : proseSlot;
+                                const lastFit = tailContainer.lastElementChild;
+                                if (!lastFit) break;
+                                const tailKind = tailContainer === proseSlot ? 'detail' : 'prose';
                                 if (isDividerNode(lastFit)) {
-                                    proseSlot.removeChild(lastFit);
+                                    tailContainer.removeChild(lastFit);
+                                    placedCount--;
                                 } else if (lastFit.tagName === 'H3' || lastFit.tagName === 'H4') {
-                                    overflowQueue.unshift(lastFit.outerHTML);
-                                    proseSlot.removeChild(lastFit);
+                                    overflowQueue.unshift({ kind: tailKind, html: lastFit.outerHTML });
+                                    tailContainer.removeChild(lastFit);
+                                    placedCount--;
                                 } else {
                                     break;
+                                }
+                                if (tailContainer !== proseSlot && tailContainer.children.length === 0) {
+                                    proseSlot.removeChild(tailContainer);
                                 }
                             }
                             break;
@@ -8488,8 +8565,19 @@
                 }
 
                 // Strip any trailing divider left at the bottom of this continuation card
-                while (proseSlot.lastElementChild && isDividerNode(proseSlot.lastElementChild)) {
-                    proseSlot.removeChild(proseSlot.lastElementChild);
+                while (true) {
+                    const tailContainer = (proseSlot.lastElementChild && proseSlot.lastElementChild.classList.contains('cont-card-body-columns'))
+                        ? proseSlot.lastElementChild
+                        : proseSlot;
+                    const lastEl = tailContainer?.lastElementChild;
+                    if (lastEl && isDividerNode(lastEl)) {
+                        tailContainer.removeChild(lastEl);
+                        if (tailContainer !== proseSlot && tailContainer.children.length === 0) {
+                            proseSlot.removeChild(tailContainer);
+                        }
+                    } else {
+                        break;
+                    }
                 }
 
                 nextCardNumber++;
