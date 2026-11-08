@@ -6926,19 +6926,17 @@
         function getActiveCardDimensions() {
             const preset = document.getElementById('cardSizePreset')?.value || 'auto';
             const orient = document.getElementById('cardOrientation')?.value || 'portrait';
-            const layoutWidth = document.getElementById('cardLayoutWidth')?.value || 'single';
-            const spreadMult = layoutWidth === 'wide' ? 2 : 1;
 
             if (preset === 'auto') {
-                const baseW = layoutWidth === 'wide' ? 760 : 520;
-                const w = orient === 'landscape' ? Math.max(680, baseW) : baseW;
+                const baseW = 520;
+                const w = orient === 'landscape' ? 680 : baseW;
                 return { width: w, height: 0, exportWidth: w * 2, exportHeight: 0, isFixed: false };
             }
 
             const base = CARD_SIZE_DIMENSIONS[preset] || CARD_SIZE_DIMENSIONS.a6;
-            const width = (orient === 'landscape' ? base.h : base.w) * spreadMult;
+            const width = orient === 'landscape' ? base.h : base.w;
             const height = orient === 'landscape' ? base.w : base.h;
-            const exportWidth = (orient === 'landscape' ? base.exportH : base.exportW) * spreadMult;
+            const exportWidth = orient === 'landscape' ? base.exportH : base.exportW;
             const exportHeight = orient === 'landscape' ? base.exportW : base.exportH;
             return { width, height, exportWidth, exportHeight, isFixed: true };
         }
