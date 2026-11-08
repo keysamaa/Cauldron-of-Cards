@@ -5190,7 +5190,7 @@
             lucide.createIcons();
 
             try {
-                const { dataUrls } = await generateAllCardsCanvases();
+                const { dataUrls } = await generateAllCardsCanvases({ previewOnly: true });
                 overlay.scrollTop = 0;
                 container.innerHTML = dataUrls.map((url, idx) => `
                     <div class="flex flex-col items-center justify-center gap-2.5 animate-modal-pop max-w-full mb-4">
@@ -6939,13 +6939,13 @@
 
         // --- card dimensions, orientation & responsive preview scaling ---
         const CARD_SIZE_DIMENSIONS = {
-            auto:    { w: 520, h: 0,   exportW: 1040, exportH: 0,    cornerRadius: 16 },
-            bridge:  { w: 378, h: 588, exportW: 675,  exportH: 1050, cornerRadius: 21 },
-            playing: { w: 420, h: 588, exportW: 750,  exportH: 1050, cornerRadius: 21 },
-            poker:   { w: 420, h: 588, exportW: 750,  exportH: 1050, cornerRadius: 21 },
-            tarot:   { w: 418, h: 722, exportW: 825,  exportH: 1425, cornerRadius: 24 },
-            a6:      { w: 420, h: 592, exportW: 1240, exportH: 1748, cornerRadius: 16 },
-            a5:      { w: 500, h: 709, exportW: 1748, exportH: 2480, cornerRadius: 16 },
+            auto:    { w: 520, h: 0,   exportW: 2600, exportH: 0,    cornerRadius: 16 },
+            bridge:  { w: 378, h: 588, exportW: 2025, exportH: 3150, cornerRadius: 21 },
+            playing: { w: 420, h: 588, exportW: 2250, exportH: 3150, cornerRadius: 21 },
+            poker:   { w: 420, h: 588, exportW: 2250, exportH: 3150, cornerRadius: 21 },
+            tarot:   { w: 418, h: 722, exportW: 2063, exportH: 3563, cornerRadius: 24 },
+            a6:      { w: 420, h: 592, exportW: 2480, exportH: 3496, cornerRadius: 16 },
+            a5:      { w: 500, h: 709, exportW: 2622, exportH: 3720, cornerRadius: 16 },
             a4:      { w: 600, h: 849, exportW: 2480, exportH: 3508, cornerRadius: 16 }
         };
 
@@ -6964,7 +6964,7 @@
             if (preset === 'auto') {
                 const baseW = 520;
                 const w = orient === 'landscape' ? 680 : baseW;
-                return { width: w, height: 0, exportWidth: w * 2, exportHeight: 0, isFixed: false };
+                return { width: w, height: 0, exportWidth: w * 5, exportHeight: 0, isFixed: false };
             }
 
             const base = CARD_SIZE_DIMENSIONS[preset] || CARD_SIZE_DIMENSIONS.a6;
@@ -8826,7 +8826,8 @@
             return new Blob([arr], { type: 'image/png' });
         }
 
-        async function generateAllCardsCanvases() {
+        async function generateAllCardsCanvases(options = {}) {
+            const previewOnly = !!options.previewOnly;
             const targets = Array.from(document.querySelectorAll('#previewBackdropWrap article.magic-card-target'));
             if (targets.length === 0) {
                 const main = document.getElementById('magicItemCard');
@@ -8841,7 +8842,9 @@
             }
 
             const { width, exportWidth, exportHeight, isFixed } = getActiveCardDimensions();
-            const exportScale = isFixed && width > 0 ? (exportWidth / width) : 2;
+            const baseExportScale = previewOnly
+                ? 2
+                : (isFixed && width > 0 ? (exportWidth / width) : 5);
 
             const canvases = [];
             const dataUrls = [];
@@ -8850,6 +8853,10 @@
                 for (const cardEl of targets) {
                     const prevTransform = cardEl.style.transform;
                     cardEl.style.transform = 'none';
+                    const cardNaturalH = cardEl.offsetHeight || 600;
+                    const exportScale = (!previewOnly && !isFixed && cardNaturalH * baseExportScale > 3840)
+                        ? Math.max(2, 3840 / cardNaturalH)
+                        : baseExportScale;
                     let rawCanvas;
                     if (window.htmlToImage && typeof window.htmlToImage.toCanvas === 'function') {
                         rawCanvas = await window.htmlToImage.toCanvas(cardEl, {
@@ -8866,7 +8873,7 @@
                     cardEl.style.transform = prevTransform;
 
                     let finalCanvas = rawCanvas;
-                    if (isFixed && exportWidth > 0 && exportHeight > 0 && (rawCanvas.width !== exportWidth || rawCanvas.height !== exportHeight)) {
+                    if (!previewOnly && isFixed && exportWidth > 0 && exportHeight > 0 && (rawCanvas.width !== exportWidth || rawCanvas.height !== exportHeight)) {
                         const exactCanvas = document.createElement('canvas');
                         exactCanvas.width = exportWidth;
                         exactCanvas.height = exportHeight;
