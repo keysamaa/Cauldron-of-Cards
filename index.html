@@ -9478,6 +9478,829 @@
             showToast("Deck Exported", "Saved JSON backup of your cards and folders.");
         }
 
+        // --- secret 5e.tools json translator (loads onto active editor without auto-saving to deck) ---
+        const FIVE_E_TOOLS_ARRAY_KEYS = [
+            ['monster', 'monster'],
+            ['npc', 'monster'],
+            ['spell', 'spell'],
+            ['item', 'item'],
+            ['baseitem', 'item'],
+            ['magicvariant', 'item'],
+            ['itemGroup', 'item'],
+            ['feat', 'feat'],
+            ['race', 'race'],
+            ['subrace', 'race'],
+            ['background', 'background'],
+            ['class', 'class'],
+            ['subclass', 'subclass'],
+            ['condition', 'conditions'],
+            ['status', 'conditions'],
+            ['disease', 'conditions'],
+            ['optionalfeature', 'other'],
+            ['reward', 'other'],
+            ['classFeature', 'other'],
+            ['subclassFeature', 'other'],
+            ['object', 'region'],
+            ['vehicle', 'region'],
+            ['trap', 'region'],
+            ['hazard', 'region']
+        ];
+
+        const FIVE_E_ABILITY_NAMES = {
+            str: 'Strength', dex: 'Dexterity', con: 'Constitution',
+            int: 'Intelligence', wis: 'Wisdom', cha: 'Charisma'
+        };
+
+        const FIVE_E_SIZE_MAP = {
+            F: 'Fine', D: 'Diminutive', T: 'Tiny', S: 'Small', M: 'Medium',
+            L: 'Large', H: 'Huge', G: 'Gargantuan', C: 'Colossal', V: 'Varies'
+        };
+
+        const FIVE_E_ALIGN_MAP = {
+            L: 'Lawful', N: 'Neutral', NX: 'Neutral', NY: 'Neutral', C: 'Chaotic',
+            G: 'Good', E: 'Evil', U: 'Unaligned', A: 'Any Alignment'
+        };
+
+        const FIVE_E_SCHOOL_MAP = {
+            A: 'Abjuration', C: 'Conjuration', D: 'Divination', E: 'Enchantment',
+            V: 'Evocation', I: 'Illusion', N: 'Necromancy', T: 'Transmutation', P: 'Psionic'
+        };
+
+        const FIVE_E_CR_XP = {
+            '0': '0 or 10 XP', '1/8': '25 XP', '1/4': '50 XP', '1/2': '100 XP',
+            '1': '200 XP', '2': '450 XP', '3': '700 XP', '4': '1,100 XP',
+            '5': '1,800 XP', '6': '2,300 XP', '7': '2,900 XP', '8': '3,900 XP',
+            '9': '5,000 XP', '10': '5,900 XP', '11': '7,200 XP', '12': '8,400 XP',
+            '13': '10,000 XP', '14': '11,500 XP', '15': '13,000 XP', '16': '15,000 XP',
+            '17': '18,000 XP', '18': '20,000 XP', '19': '22,000 XP', '20': '25,000 XP',
+            '21': '33,000 XP', '22': '41,000 XP', '23': '50,000 XP', '24': '62,000 XP',
+            '25': '75,000 XP', '26': '90,000 XP', '27': '105,000 XP', '28': '120,000 XP',
+            '29': '135,000 XP', '30': '155,000 XP'
+        };
+
+        const FIVE_E_DMG_TYPE_MAP = {
+            A: 'acid', B: 'bludgeoning', C: 'cold', F: 'fire', O: 'force',
+            L: 'lightning', N: 'necrotic', P: 'piercing', I: 'poison',
+            Y: 'psychic', R: 'radiant', S: 'slashing', T: 'thunder'
+        };
+
+        const FIVE_E_PROP_MAP = {
+            'A': 'Ammunition', 'AF': 'Ammunition (futuristic)', 'BF': 'Burst Fire',
+            'F': 'Finesse', 'H': 'Heavy', 'L': 'Light', 'LD': 'Loading',
+            'R': 'Reach', 'RLD': 'Reload', 'S': 'Special', 'T': 'Thrown',
+            '2H': 'Two-Handed', 'V': 'Versatile'
+        };
+
+        function isCauldronBackupJSON(parsed) {
+            if (!parsed || typeof parsed !== 'object') return false;
+            if (!Array.isArray(parsed) && Array.isArray(parsed.cards)) return true;
+            if (Array.isArray(parsed) && parsed.length > 0) {
+                const first = parsed[0];
+                return Boolean(first && typeof first === 'object' && (
+                    first.showStatPills !== undefined ||
+                    first.mixAndMatch !== undefined ||
+                    first.resourceBars !== undefined ||
+                    first.extraCustomPills !== undefined ||
+                    first.charSheetVitalBoxes !== undefined
+                ));
+            }
+            if (!Array.isArray(parsed) && (parsed.showStatPills !== undefined || parsed.mixAndMatch !== undefined)) {
+                return true;
+            }
+            return false;
+        }
+
+        function infer5eToolsEntryCategory(obj) {
+            if (!obj || typeof obj !== 'object') return null;
+            if (obj.ac !== undefined && obj.hp !== undefined && (obj.str !== undefined || obj.dex !== undefined || obj.cr !== undefined || obj.trait !== undefined || obj.action !== undefined)) {
+                return 'monster';
+            }
+            if (obj.level !== undefined && obj.school !== undefined && (obj.time !== undefined || obj.range !== undefined || obj.components !== undefined)) {
+                return 'spell';
+            }
+            if (obj.hd !== undefined || obj.proficiency !== undefined || obj.classTableGroups !== undefined || obj.classFeatures !== undefined) {
+                return 'class';
+            }
+            if (obj.className !== undefined && (obj.shortName !== undefined || obj.subclassFeatures !== undefined)) {
+                return 'subclass';
+            }
+            if (obj.reqAttune !== undefined || obj.wondrous || obj.weaponCategory || obj.dmg1 || obj.Stealth !== undefined || obj.rarity !== undefined || obj.baseItem !== undefined || obj.type === 'M' || obj.type === 'R' || obj.type === 'P' || obj.type === 'W' || obj.inherits !== undefined) {
+                return 'item';
+            }
+            if (obj.featureType !== undefined) {
+                return 'other';
+            }
+            if (obj.skillProficiencies !== undefined && (obj.startingEquipment !== undefined || obj.feats !== undefined)) {
+                return 'background';
+            }
+            if (obj.size !== undefined && obj.speed !== undefined && !obj.ac && !obj.hp) {
+                return 'race';
+            }
+            if (obj.prerequisite !== undefined && obj.entries !== undefined) {
+                return 'feat';
+            }
+            if (obj.entries !== undefined && obj.name !== undefined) {
+                return 'other';
+            }
+            return null;
+        }
+
+        function extract5eToolsTarget(parsed) {
+            if (!parsed || typeof parsed !== 'object') return null;
+            if (!Array.isArray(parsed)) {
+                for (const [key, cat] of FIVE_E_TOOLS_ARRAY_KEYS) {
+                    if (Array.isArray(parsed[key]) && parsed[key].length > 0) {
+                        return { category: cat, rawType: key, entry: parsed[key][0] };
+                    }
+                }
+                const singleCat = infer5eToolsEntryCategory(parsed);
+                if (singleCat) {
+                    return { category: singleCat, rawType: singleCat, entry: parsed };
+                }
+            } else if (parsed.length > 0 && typeof parsed[0] === 'object') {
+                const singleCat = infer5eToolsEntryCategory(parsed[0]);
+                if (singleCat) {
+                    return { category: singleCat, rawType: singleCat, entry: parsed[0] };
+                }
+            }
+            return null;
+        }
+
+        function clean5eToolsTags(input) {
+            if (input === null || input === undefined) return '';
+            let str = String(input);
+            let safety = 0;
+            while (str.includes('{@') && safety < 12) {
+                safety++;
+                str = str.replace(/\{@([a-zA-Z0-9]+)(?:\s+([^{}]*))?\}/g, (_, tagRaw, contentRaw) => {
+                    const tag = tagRaw.trim();
+                    const content = (contentRaw || '').trim();
+                    const parts = content.split('|').map(s => s.trim());
+                    const first = parts[0] || '';
+
+                    switch (tag) {
+                        case 'atk': {
+                            const codes = first.split(',').map(c => c.trim().toLowerCase());
+                            const hasM = codes.some(c => c.startsWith('m'));
+                            const hasR = codes.some(c => c.startsWith('r'));
+                            const isSpell = codes.some(c => c.endsWith('s'));
+                            const mode = (hasM && hasR) ? 'Melee or Ranged' : (hasR ? 'Ranged' : 'Melee');
+                            const kind = isSpell ? 'Spell' : 'Weapon';
+                            return `*${mode} ${kind} Attack:*`;
+                        }
+                        case 'atkr': {
+                            const codes = first.split(',').map(c => c.trim().toLowerCase());
+                            const hasM = codes.includes('m');
+                            const hasR = codes.includes('r');
+                            const mode = (hasM && hasR) ? 'Melee or Ranged' : (hasR ? 'Ranged' : 'Melee');
+                            return `*${mode} Attack Roll:*`;
+                        }
+                        case 'hit': {
+                            const n = parseInt(first, 10);
+                            if (!isNaN(n)) return n >= 0 ? `+${n}` : `${n}`;
+                            return first.startsWith('+') || first.startsWith('-') ? first : `+${first}`;
+                        }
+                        case 'h':
+                            return '*Hit:* ';
+                        case 'm':
+                            return '*Miss:* ';
+                        case 'hom':
+                            return '*Hit or Miss:* ';
+                        case 'actSave': {
+                            const abName = FIVE_E_ABILITY_NAMES[first.toLowerCase()] || first.toUpperCase();
+                            return `*${abName} Saving Throw:*`;
+                        }
+                        case 'actSaveFail':
+                            return '*Failure:*';
+                        case 'actSaveFailBy':
+                            return `*Failure by ${first} or more:*`;
+                        case 'actSaveSuccess':
+                            return '*Success:*';
+                        case 'actSaveSuccessOrFail':
+                            return '*Failure or Success:*';
+                        case 'actTrigger':
+                            return '*Trigger:*';
+                        case 'actResponse':
+                            return `*Response${first.includes('d') ? '—' : ':'}*`;
+                        case 'dc':
+                            return `DC ${first}`;
+                        case 'recharge':
+                            return first ? `(Recharge ${first}–6)` : '(Recharge 6)';
+                        case 'damage':
+                        case 'dice':
+                            return parts[2] || first;
+                        case 'scaledice':
+                        case 'scaledamage':
+                            return parts[2] || first;
+                        case 'd20': {
+                            const n = parseInt(first, 10);
+                            if (!isNaN(n)) return n >= 0 ? `+${n}` : `${n}`;
+                            return first;
+                        }
+                        case 'chance':
+                            return parts[1] || `${first}%`;
+                        case 'b':
+                        case 'bold':
+                            return `**${first}**`;
+                        case 'i':
+                        case 'italic':
+                            return `*${first}*`;
+                        case 'bi':
+                            return `***${first}***`;
+                        case 'spell':
+                        case 'item':
+                            return `*${parts[2] || first}*`;
+                        case 'status':
+                            return parts[2] || first;
+                        case 'filter':
+                            return first;
+                        case 'quickref':
+                            return parts[4] || parts[2] || first;
+                        case 'note':
+                            return `*(Note: ${first})*`;
+                        default:
+                            return parts[2] || first;
+                    }
+                });
+            }
+            return str;
+        }
+
+        function format5eTableCell(cell) {
+            if (cell === null || cell === undefined) return '';
+            if (typeof cell === 'string' || typeof cell === 'number') {
+                return clean5eToolsTags(String(cell)).replace(/\n+/g, ' ');
+            }
+            if (typeof cell === 'object') {
+                if (cell.roll) {
+                    if (cell.roll.exact !== undefined) return String(cell.roll.exact);
+                    if (cell.roll.min !== undefined && cell.roll.max !== undefined) {
+                        return cell.roll.min === cell.roll.max ? `${cell.roll.min}` : `${cell.roll.min}–${cell.roll.max}`;
+                    }
+                }
+                if (cell.entry) return format5eTableCell(cell.entry);
+                if (cell.entries) return convert5eEntriesToMarkdown(cell.entries).replace(/\n+/g, ' ');
+            }
+            return '';
+        }
+
+        function convert5eEntriesToMarkdown(entries, depth = 0) {
+            if (!entries) return '';
+            if (typeof entries === 'string' || typeof entries === 'number') {
+                return clean5eToolsTags(String(entries));
+            }
+            if (Array.isArray(entries)) {
+                return entries
+                    .map(e => convert5eEntriesToMarkdown(e, depth))
+                    .filter(Boolean)
+                    .join('\n\n');
+            }
+            if (typeof entries === 'object') {
+                const e = entries;
+                const t = e.type || '';
+
+                if (t === 'table') {
+                    const headers = Array.isArray(e.colLabels) && e.colLabels.length > 0
+                        ? e.colLabels.map(c => clean5eToolsTags(c).replace(/\|/g, '/'))
+                        : ['Roll', 'Result'];
+                    const rows = Array.isArray(e.rows) ? e.rows : [];
+                    const tableLines = [];
+                    if (e.caption) {
+                        tableLines.push(`#### ${clean5eToolsTags(e.caption)}`);
+                    }
+                    tableLines.push(`| ${headers.join(' | ')} |`);
+                    rows.forEach(r => {
+                        if (Array.isArray(r)) {
+                            tableLines.push(`| ${r.map(c => format5eTableCell(c).replace(/\|/g, '/')).join(' | ')} |`);
+                        } else if (r && Array.isArray(r.row)) {
+                            tableLines.push(`| ${r.row.map(c => format5eTableCell(c).replace(/\|/g, '/')).join(' | ')} |`);
+                        }
+                    });
+                    return tableLines.join('\n');
+                }
+
+                if (t === 'list') {
+                    const items = Array.isArray(e.items) ? e.items : [];
+                    return items.map(it => {
+                        if (typeof it === 'string') {
+                            return `- ${clean5eToolsTags(it)}`;
+                        }
+                        if (it && typeof it === 'object') {
+                            const itemBody = convert5eEntriesToMarkdown(it.entry || it.entries, depth + 1).replace(/\n+/g, ' ');
+                            if (it.name) {
+                                const cleanName = clean5eToolsTags(it.name).replace(/\.$/, '');
+                                return `- ***${cleanName}.*** ${itemBody}`;
+                            }
+                            return `- ${itemBody}`;
+                        }
+                        return '';
+                    }).filter(Boolean).join('\n');
+                }
+
+                if (t === 'inset' || t === 'insetReadaloud' || t === 'quote') {
+                    const innerParts = [];
+                    if (e.name) innerParts.push(`***${clean5eToolsTags(e.name)}.***`);
+                    if (e.entries) innerParts.push(convert5eEntriesToMarkdown(e.entries, depth + 1));
+                    if (e.by) innerParts.push(`— *${clean5eToolsTags(e.by)}*`);
+                    const combined = innerParts.filter(Boolean).join('\n');
+                    return combined.split('\n').map(l => `> ${l}`).join('\n');
+                }
+
+                if (t === 'abilityDc') {
+                    const attrs = (e.attributes || []).map(a => FIVE_E_ABILITY_NAMES[a] || a.toUpperCase()).join(' or ');
+                    return `**${clean5eToolsTags(e.name || 'Spell')} Save DC** = 8 + your proficiency bonus + your ${attrs} modifier`;
+                }
+
+                if (t === 'abilityAttackMod') {
+                    const attrs = (e.attributes || []).map(a => FIVE_E_ABILITY_NAMES[a] || a.toUpperCase()).join(' or ');
+                    return `**${clean5eToolsTags(e.name || 'Spell')} Attack Modifier** = your proficiency bonus + your ${attrs} modifier`;
+                }
+
+                if (t === 'section') {
+                    const head = e.name ? `### ${clean5eToolsTags(e.name)}\n\n` : '';
+                    return head + convert5eEntriesToMarkdown(e.entries, depth + 1);
+                }
+
+                if (e.name) {
+                    const cleanName = clean5eToolsTags(e.name).replace(/\.$/, '');
+                    if (e.entry) {
+                        return `***${cleanName}.*** ${convert5eEntriesToMarkdown(e.entry, depth + 1)}`;
+                    }
+                    if (Array.isArray(e.entries) && e.entries.length > 0) {
+                        if (typeof e.entries[0] === 'string') {
+                            const firstLine = `***${cleanName}.*** ${clean5eToolsTags(e.entries[0])}`;
+                            const rest = e.entries.slice(1).map(sub => convert5eEntriesToMarkdown(sub, depth + 1)).filter(Boolean);
+                            return [firstLine, ...rest].join('\n\n');
+                        }
+                        return `#### ${cleanName}\n${convert5eEntriesToMarkdown(e.entries, depth + 1)}`;
+                    }
+                    return `***${cleanName}.***`;
+                }
+
+                if (e.entries) {
+                    return convert5eEntriesToMarkdown(e.entries, depth + 1);
+                }
+                if (e.entry) {
+                    return convert5eEntriesToMarkdown(e.entry, depth + 1);
+                }
+            }
+            return '';
+        }
+
+        function format5eAlignment(alignArr) {
+            if (!alignArr) return '';
+            if (typeof alignArr === 'string') return alignArr;
+            if (!Array.isArray(alignArr) || alignArr.length === 0) return '';
+            const first = alignArr[0];
+            if (typeof first === 'object' && first.alignment) {
+                return format5eAlignment(first.alignment);
+            }
+            const tokens = alignArr.map(a => FIVE_E_ALIGN_MAP[a] || a);
+            if (tokens.length === 2 && tokens[0] === 'Neutral' && tokens[1] === 'Neutral') return 'Neutral';
+            if (alignArr.length === 1 && alignArr[0] === 'N') return 'Neutral';
+            return tokens.join(' ');
+        }
+
+        function format5eCreatureType(typeVal) {
+            if (!typeVal) return 'Creature';
+            if (typeof typeVal === 'string') return typeVal.charAt(0).toUpperCase() + typeVal.slice(1);
+            if (typeof typeVal === 'object') {
+                let base = typeVal.type ? (typeof typeVal.type === 'string' ? typeVal.type : (typeVal.type.choose || []).join(' or ')) : 'Creature';
+                base = base.charAt(0).toUpperCase() + base.slice(1);
+                if (typeVal.swarmSize) {
+                    const swSize = FIVE_E_SIZE_MAP[typeVal.swarmSize] || 'Tiny';
+                    base = `swarm of ${swSize} ${base}s`;
+                }
+                if (Array.isArray(typeVal.tags) && typeVal.tags.length > 0) {
+                    const tagStr = typeVal.tags.map(t => typeof t === 'string' ? t : `${t.prefix || ''} ${t.tag || ''}`.trim()).join(', ');
+                    base += ` (${tagStr})`;
+                }
+                return base;
+            }
+            return 'Creature';
+        }
+
+        function format5eSpeed(speedObj) {
+            if (!speedObj) return '30 ft.';
+            if (typeof speedObj === 'string' || typeof speedObj === 'number') return `${speedObj} ft.`;
+            const parts = [];
+            const parseMode = (val, label) => {
+                if (val === undefined || val === null) return;
+                if (typeof val === 'number') {
+                    parts.push(label ? `${label} ${val} ft.` : `${val} ft.`);
+                } else if (typeof val === 'object' && val.number !== undefined) {
+                    const cond = val.condition ? ` ${clean5eToolsTags(val.condition)}` : '';
+                    parts.push(`${label ? label + ' ' : ''}${val.number} ft.${cond}`);
+                }
+            };
+            parseMode(speedObj.walk, '');
+            parseMode(speedObj.burrow, 'burrow');
+            parseMode(speedObj.climb, 'climb');
+            if (speedObj.fly !== undefined) {
+                parseMode(speedObj.fly, 'fly');
+                if (speedObj.canHover && parts.length > 0 && !parts[parts.length - 1].includes('hover')) {
+                    parts[parts.length - 1] += ' (hover)';
+                }
+            }
+            parseMode(speedObj.swim, 'swim');
+            return parts.join(', ') || '30 ft.';
+        }
+
+        function format5eDamageMitigationList(arr, keyName) {
+            if (!Array.isArray(arr) || arr.length === 0) return '';
+            return arr.map(item => {
+                if (typeof item === 'string') return item;
+                if (item && typeof item === 'object') {
+                    if (item.special) return clean5eToolsTags(item.special);
+                    if (Array.isArray(item[keyName])) {
+                        const sub = format5eDamageMitigationList(item[keyName], keyName);
+                        const note = item.note ? ` ${clean5eToolsTags(item.note)}` : '';
+                        const pre = item.preNote ? `${clean5eToolsTags(item.preNote)} ` : '';
+                        return `${pre}${sub}${note}`;
+                    }
+                }
+                return '';
+            }).filter(Boolean).join(', ');
+        }
+
+        function convert5eSpellcastingBlocks(spellcastingArr) {
+            if (!Array.isArray(spellcastingArr) || spellcastingArr.length === 0) return '';
+            return spellcastingArr.map(sc => {
+                const lines = [];
+                const title = clean5eToolsTags(sc.name || 'Spellcasting').replace(/\.$/, '');
+                const headerTxt = Array.isArray(sc.headerEntries) ? convert5eEntriesToMarkdown(sc.headerEntries) : '';
+                lines.push(`***${title}.*** ${headerTxt}`.trim());
+
+                if (Array.isArray(sc.will) && sc.will.length > 0) {
+                    lines.push(`- **At will:** ${sc.will.map(s => clean5eToolsTags(typeof s === 'string' ? s : s.entry)).join(', ')}`);
+                }
+                if (sc.daily && typeof sc.daily === 'object') {
+                    Object.keys(sc.daily).forEach(k => {
+                        const num = k.replace('e', '');
+                        const eachTxt = k.endsWith('e') ? ' each' : '';
+                        const list = sc.daily[k].map(s => clean5eToolsTags(typeof s === 'string' ? s : s.entry)).join(', ');
+                        lines.push(`- **${num}/day${eachTxt}:** ${list}`);
+                    });
+                }
+                if (sc.spells && typeof sc.spells === 'object') {
+                    Object.keys(sc.spells).sort((a, b) => Number(a) - Number(b)).forEach(lvl => {
+                        const spObj = sc.spells[lvl];
+                        if (!spObj || !Array.isArray(spObj.spells)) return;
+                        const list = spObj.spells.map(s => clean5eToolsTags(s)).join(', ');
+                        if (lvl === '0') {
+                            lines.push(`- **Cantrips (at will):** ${list}`);
+                        } else {
+                            const ord = lvl === '1' ? '1st' : lvl === '2' ? '2nd' : lvl === '3' ? '3rd' : `${lvl}th`;
+                            const slotsTxt = spObj.slots ? ` (${spObj.slots} slot${spObj.slots > 1 ? 's' : ''})` : '';
+                            lines.push(`- **${ord} level${slotsTxt}:** ${list}`);
+                        }
+                    });
+                }
+                if (Array.isArray(sc.footerEntries) && sc.footerEntries.length > 0) {
+                    lines.push(convert5eEntriesToMarkdown(sc.footerEntries));
+                }
+                return lines.join('\n');
+            }).join('\n\n');
+        }
+
+        function load5eToolsDataOntoActiveCard(target) {
+            if (!target || !target.entry) return false;
+            const { category, entry } = target;
+            const setVal = (id, v) => { const el = document.getElementById(id); if (el) el.value = v ?? ''; };
+            const setChk = (id, v) => { const el = document.getElementById(id); if (el) el.checked = !!v; };
+
+            selectCardCategory(category);
+            extraCustomPills = [];
+            updateCorePillSlotsVisibility();
+
+            const entryName = clean5eToolsTags(entry.name || 'Untitled');
+            setVal('itemName', entryName);
+
+            const is2024Source = ['XPHB', 'XDMG', 'XMM', 'OneD&D'].includes(entry.source) || entry.edition === 'one' || entry.initiative !== undefined;
+
+            if (category === 'monster') {
+                setRuleEdition(is2024Source ? '2024' : '2014');
+                const sizeArr = Array.isArray(entry.size) ? entry.size : (entry.size ? [entry.size] : ['M']);
+                const sizeTxt = sizeArr.map(s => FIVE_E_SIZE_MAP[s] || s).join(' or ');
+                const typeTxt = format5eCreatureType(entry.type);
+                const alignTxt = format5eAlignment(entry.alignment);
+                setVal('customSubtitleInput', `${sizeTxt} ${typeTxt}${alignTxt ? ', ' + alignTxt : ''}`);
+
+                // AC
+                let acStr = '10';
+                if (Array.isArray(entry.ac) && entry.ac.length > 0) {
+                    acStr = entry.ac.map(a => {
+                        if (typeof a === 'number' || typeof a === 'string') return String(a);
+                        if (a && typeof a === 'object') {
+                            const from = Array.isArray(a.from) ? ` (${clean5eToolsTags(a.from.join(', '))})` : '';
+                            const cond = a.condition ? ` ${clean5eToolsTags(a.condition)}` : '';
+                            return `${a.ac ?? 10}${from}${cond}`;
+                        }
+                        return '';
+                    }).filter(Boolean).join(', ');
+                }
+                setVal('monAC', acStr);
+
+                // HP
+                let hpStr = '10';
+                if (entry.hp) {
+                    if (entry.hp.special) hpStr = clean5eToolsTags(entry.hp.special);
+                    else if (entry.hp.average !== undefined) {
+                        hpStr = `${entry.hp.average}${entry.hp.formula ? ` (${entry.hp.formula})` : ''}`;
+                    }
+                }
+                setVal('monHP', hpStr);
+                setVal('monSpeed', format5eSpeed(entry.speed));
+
+                // 6 Ability Scores
+                setVal('monStr', entry.str ?? 10);
+                setVal('monDex', entry.dex ?? 10);
+                setVal('monCon', entry.con ?? 10);
+                setVal('monInt', entry.int ?? 10);
+                setVal('monWis', entry.wis ?? 10);
+                setVal('monCha', entry.cha ?? 10);
+
+                // Initiative
+                const dexMod = calcMod(entry.dex ?? 10);
+                setVal('monInit', `${formatMod(dexMod)} (${10 + dexMod})`);
+
+                // Saves & Skills
+                if (entry.save && typeof entry.save === 'object') {
+                    const savesStr = Object.entries(entry.save)
+                        .map(([k, v]) => `${k.charAt(0).toUpperCase() + k.slice(1)} ${v}`)
+                        .join(', ');
+                    setVal('monSaves', savesStr);
+                } else {
+                    setVal('monSaves', '');
+                }
+
+                if (entry.skill && typeof entry.skill === 'object') {
+                    const skillsStr = Object.entries(entry.skill)
+                        .filter(([k]) => k !== 'other')
+                        .map(([k, v]) => `${k.replace(/\b\w/g, c => c.toUpperCase())} ${v}`)
+                        .join(', ');
+                    setVal('monSkills', skillsStr);
+                } else {
+                    setVal('monSkills', '');
+                }
+
+                // Resistances, Immunities, Vulnerabilities
+                const mitParts = [];
+                const vulnStr = format5eDamageMitigationList(entry.vulnerable, 'vulnerable');
+                const resStr = format5eDamageMitigationList(entry.resist, 'resist');
+                const immStr = format5eDamageMitigationList(entry.immune, 'immune');
+                const condImmStr = format5eDamageMitigationList(entry.conditionImmune, 'conditionImmune');
+                if (vulnStr) mitParts.push(`Vuln: ${vulnStr}`);
+                if (resStr) mitParts.push(`Resist: ${resStr}`);
+                if (immStr) mitParts.push(`Immune: ${immStr}`);
+                if (condImmStr) mitParts.push(`Cond. Immune: ${condImmStr}`);
+                setVal('monResist', mitParts.join('; '));
+
+                // Senses & Languages
+                const sensesArr = Array.isArray(entry.senses) ? entry.senses.map(s => clean5eToolsTags(s)) : [];
+                const passiveVal = entry.passive !== undefined ? entry.passive : (10 + calcMod(entry.wis ?? 10));
+                sensesArr.push(`Passive Perception ${passiveVal}`);
+                setVal('monSenses', sensesArr.join(', '));
+                setVal('monLangs', Array.isArray(entry.languages) && entry.languages.length > 0 ? entry.languages.map(l => clean5eToolsTags(l)).join(', ') : '—');
+
+                // CR
+                let crVal = '—';
+                if (entry.cr !== undefined) {
+                    const rawCr = typeof entry.cr === 'object' ? (entry.cr.cr || '0') : String(entry.cr);
+                    const xpTxt = FIVE_E_CR_XP[rawCr] ? ` (${FIVE_E_CR_XP[rawCr]})` : '';
+                    crVal = `${rawCr}${xpTxt}`;
+                }
+                setVal('monCR', crVal);
+
+                // Traits, Spellcasting, Actions, Bonus Actions, Reactions, Legendary
+                const descBlocks = [];
+                if (Array.isArray(entry.trait) && entry.trait.length > 0) {
+                    descBlocks.push(convert5eEntriesToMarkdown(entry.trait));
+                }
+                if (Array.isArray(entry.spellcasting) && entry.spellcasting.length > 0) {
+                    descBlocks.push(convert5eSpellcastingBlocks(entry.spellcasting));
+                }
+                if (Array.isArray(entry.action) && entry.action.length > 0) {
+                    descBlocks.push(`### Actions\n\n${convert5eEntriesToMarkdown(entry.action)}`);
+                }
+                if (Array.isArray(entry.bonus) && entry.bonus.length > 0) {
+                    descBlocks.push(`### Bonus Actions\n\n${convert5eEntriesToMarkdown(entry.bonus)}`);
+                }
+                if (Array.isArray(entry.reaction) && entry.reaction.length > 0) {
+                    descBlocks.push(`### Reactions\n\n${convert5eEntriesToMarkdown(entry.reaction)}`);
+                }
+                if (Array.isArray(entry.legendary) && entry.legendary.length > 0) {
+                    const legHead = Array.isArray(entry.legendaryHeader)
+                        ? convert5eEntriesToMarkdown(entry.legendaryHeader)
+                        : `The ${entryName.toLowerCase()} can take ${entry.legendaryActions || 3} legendary actions, choosing from the options below.`;
+                    descBlocks.push(`### Legendary Actions\n\n${legHead}\n\n${convert5eEntriesToMarkdown(entry.legendary)}`);
+                }
+                setVal('itemDesc', descBlocks.filter(Boolean).join('\n\n'));
+                setVal('itemFlavor', '');
+            } else if (category === 'spell') {
+                const lvl = Number(entry.level) || 0;
+                const schoolName = FIVE_E_SCHOOL_MAP[entry.school] || 'Arcane';
+                const isRitual = Boolean(entry.meta && entry.meta.ritual);
+                const ord = lvl === 1 ? '1st-level' : lvl === 2 ? '2nd-level' : lvl === 3 ? '3rd-level' : `${lvl}th-level`;
+                const subLine = lvl === 0
+                    ? `${schoolName} cantrip${isRitual ? ' (ritual)' : ''}`
+                    : `${ord} ${schoolName.toLowerCase()}${isRitual ? ' (ritual)' : ''}`;
+                setVal('customSubtitleInput', subLine);
+
+                // Casting Time
+                let timeStr = '1 Action';
+                if (Array.isArray(entry.time) && entry.time.length > 0) {
+                    const t0 = entry.time[0];
+                    const unit = (t0.unit || 'action').replace(/^bonus$/, 'bonus action');
+                    const unitCap = unit.replace(/\b\w/g, c => c.toUpperCase());
+                    const cond = t0.condition ? ` (${clean5eToolsTags(t0.condition)})` : '';
+                    timeStr = `${t0.number ?? 1} ${unitCap}${t0.number > 1 ? 's' : ''}${cond}`;
+                }
+                // Range
+                let rangeStr = 'Self';
+                if (entry.range) {
+                    if (entry.range.type === 'point' && entry.range.distance) {
+                        const d = entry.range.distance;
+                        rangeStr = d.amount ? `${d.amount} ${d.type}` : (d.type ? d.type.charAt(0).toUpperCase() + d.type.slice(1) : 'Self');
+                    } else if (entry.range.distance) {
+                        const d = entry.range.distance;
+                        const shapeCap = (entry.range.type || '').replace(/\b\w/g, c => c.toUpperCase());
+                        rangeStr = `Self (${d.amount || ''}-${d.type || 'ft.'} ${shapeCap})`;
+                    }
+                }
+                // Components
+                const compParts = [];
+                if (entry.components) {
+                    if (entry.components.v) compParts.push('V');
+                    if (entry.components.s) compParts.push('S');
+                    if (entry.components.m) {
+                        const matTxt = typeof entry.components.m === 'string'
+                            ? entry.components.m
+                            : (entry.components.m.text || '');
+                        compParts.push(matTxt ? `M (${clean5eToolsTags(matTxt)})` : 'M');
+                    }
+                }
+                // Duration
+                let durStr = 'Instantaneous';
+                if (Array.isArray(entry.duration) && entry.duration.length > 0) {
+                    const d0 = entry.duration[0];
+                    if (d0.type === 'instant') durStr = 'Instantaneous';
+                    else if (d0.type === 'permanent') durStr = 'Until dispelled';
+                    else if (d0.type === 'special') durStr = 'Special';
+                    else if (d0.duration) {
+                        const amt = d0.duration.amount || 1;
+                        const u = d0.duration.type || 'minute';
+                        const conc = d0.concentration ? 'Concentration, up to ' : '';
+                        durStr = `${conc}${amt} ${u}${amt > 1 ? 's' : ''}`;
+                    }
+                }
+                // Classes
+                let classListStr = '';
+                const classArr = entry.classes?.fromClassList || entry.classes?.fromClassListVariant;
+                if (Array.isArray(classArr) && classArr.length > 0) {
+                    classListStr = [...new Set(classArr.map(c => c.name).filter(Boolean))].join(', ');
+                }
+
+                setChk('showStatPills', true);
+                setVal('statPrimary', timeStr);
+                setVal('statSecondary', rangeStr);
+                setVal('statProps', compParts.join(', ') || 'V, S');
+                setVal('statWeightVal', durStr);
+                setVal('statExtra5', classListStr);
+
+                const bodyParts = [convert5eEntriesToMarkdown(entry.entries)];
+                if (Array.isArray(entry.entriesHigherLevel) && entry.entriesHigherLevel.length > 0) {
+                    bodyParts.push(convert5eEntriesToMarkdown(entry.entriesHigherLevel));
+                }
+                setVal('itemDesc', bodyParts.filter(Boolean).join('\n\n'));
+                setVal('itemFlavor', '');
+            } else if (category === 'item') {
+                const srcItem = entry.inherits ? { ...entry, ...entry.inherits, name: entry.name || entry.inherits.name } : entry;
+                const rawCode = String(srcItem.type || '').split('|')[0];
+                let catType = 'Wondrous item';
+                if (srcItem.wondrous) catType = 'Wondrous item';
+                else if (rawCode === 'M' || rawCode === 'R' || srcItem.weaponCategory) catType = 'Weapon';
+                else if (['LA', 'MA', 'HA', 'S'].includes(rawCode)) catType = 'Armor';
+                else if (rawCode === 'P') catType = 'Potion';
+                else if (rawCode === 'RG') catType = 'Ring';
+                else if (rawCode === 'RD') catType = 'Rod';
+                else if (rawCode === 'SC') catType = 'Scroll';
+                else if (rawCode === 'ST' || srcItem.staff) catType = 'Staff';
+                else if (rawCode === 'WD') catType = 'Wand';
+                else if (rawCode) catType = 'Adventuring Gear';
+
+                setVal('itemType', catType);
+                const subStr = srcItem.baseItem
+                    ? String(srcItem.baseItem).split('|')[0]
+                    : (srcItem.typeAlt || '');
+                setVal('itemSubtype', subStr);
+
+                const rawRarity = String(srcItem.rarity || 'common').toLowerCase();
+                const validRarities = ['common', 'uncommon', 'rare', 'very rare', 'legendary', 'artifact', 'varies'];
+                const mappedRarity = validRarities.includes(rawRarity) ? rawRarity : 'common';
+                setVal('itemRarity', mappedRarity);
+
+                const hasAttune = Boolean(srcItem.reqAttune);
+                setChk('reqAttune', hasAttune);
+                setVal('attuneText', typeof srcItem.reqAttune === 'string' ? clean5eToolsTags(srcItem.reqAttune) : '');
+                toggleAttuneInput();
+
+                // Item stat pills
+                const p1Parts = [];
+                if (srcItem.bonusWeapon) p1Parts.push(`${srcItem.bonusWeapon} Bonus`);
+                if (srcItem.bonusAc) p1Parts.push(`${srcItem.bonusAc} AC`);
+                if (srcItem.ac) p1Parts.push(`AC ${srcItem.ac}`);
+                if (srcItem.dmg1) {
+                    const dt = FIVE_E_DMG_TYPE_MAP[srcItem.dmgType] || '';
+                    p1Parts.push(`${srcItem.dmg1}${dt ? ' ' + dt : ''}`);
+                }
+                const propStr = Array.isArray(srcItem.property)
+                    ? srcItem.property.map(p => {
+                        const code = String(p).split('|')[0];
+                        if (code === 'V' && srcItem.dmg2) return `Versatile (${srcItem.dmg2})`;
+                        return FIVE_E_PROP_MAP[code] || code;
+                    }).join(', ')
+                    : '';
+                const wtValParts = [];
+                if (srcItem.weight) wtValParts.push(`${srcItem.weight} lb.`);
+                if (srcItem.value) {
+                    const gp = srcItem.value >= 100 ? `${srcItem.value / 100} GP` : `${srcItem.value} CP`;
+                    wtValParts.push(gp);
+                }
+
+                setChk('showStatPills', Boolean(p1Parts.length || propStr || wtValParts.length));
+                setVal('statPrimary', p1Parts.join(' • '));
+                setVal('statSecondary', srcItem.bonusSpellAttack ? `${srcItem.bonusSpellAttack} Spell Attack` : '');
+                setVal('statProps', propStr);
+                setVal('statWeightVal', wtValParts.join(' • '));
+
+                if (srcItem.charges) {
+                    setChk('showCharges', true);
+                    resourceBars = [{ id: 'bar_5etools', title: 'Charges', max: Math.min(20, parseInt(srcItem.charges, 10) || 7), scale: 1 }];
+                } else {
+                    setChk('showCharges', false);
+                    resourceBars = [];
+                }
+                renderResourceBarsEditor();
+
+                setVal('itemDesc', convert5eEntriesToMarkdown(srcItem.entries || []));
+                setVal('itemFlavor', '');
+            } else {
+                // Feat, Race / Species, Background, Class, Subclass, Condition, Other Feature, Region
+                if (category === 'race' || category === 'background') {
+                    setRuleEdition(is2024Source ? '2024' : '2014');
+                }
+                const srcTag = entry.source ? ` • ${entry.source}` : '';
+                const catMeta = BREW_CARD_LIST.find(c => c.key === category);
+                setVal('customSubtitleInput', `${catMeta ? catMeta.title : 'Feature'}${srcTag}`);
+
+                if (category === 'race') {
+                    const sizeArr = Array.isArray(entry.size) ? entry.size : (entry.size ? [entry.size] : ['M']);
+                    setVal('statPrimary', entry.creatureTypes ? entry.creatureTypes.join(', ') : 'Humanoid');
+                    setVal('statSecondary', sizeArr.map(s => FIVE_E_SIZE_MAP[s] || s).join(' or '));
+                    setVal('statProps', format5eSpeed(entry.speed));
+                    setVal('statWeightVal', entry.darkvision ? `${entry.darkvision} ft.` : 'Standard');
+                } else if (category === 'feat') {
+                    setVal('statPrimary', entry.category ? `Feat (${entry.category})` : 'Feat');
+                    setVal('statSecondary', entry.prerequisite ? clean5eToolsTags(JSON.stringify(entry.prerequisite).replace(/[{}"[\]]/g, ' ')) : 'None');
+                    setVal('statProps', '');
+                    setVal('statWeightVal', '');
+                } else {
+                    setVal('statPrimary', '');
+                    setVal('statSecondary', '');
+                    setVal('statProps', '');
+                    setVal('statWeightVal', '');
+                }
+
+                setVal('itemDesc', convert5eEntriesToMarkdown(entry.entries || []));
+                setVal('itemFlavor', '');
+            }
+
+            if (entry.source) {
+                setVal('footerSource', `Cauldron of Cards • ${entry.source}`);
+            }
+            renderCard();
+            return true;
+        }
+
+        // Allow pasting raw 5e.tools JSON directly into the Name input box (#itemName)
+        document.getElementById('itemName')?.addEventListener('paste', (e) => {
+            const pasted = (e.clipboardData || window.clipboardData)?.getData('text') || '';
+            const trimmed = pasted.trim();
+            if ((trimmed.startsWith('{') && trimmed.endsWith('}')) || (trimmed.startsWith('[') && trimmed.endsWith(']'))) {
+                try {
+                    const parsed = JSON.parse(trimmed);
+                    const target = extract5eToolsTarget(parsed);
+                    if (target && load5eToolsDataOntoActiveCard(target)) {
+                        e.preventDefault();
+                        showToast("5e.tools JSON Loaded!", `Translated "${target.entry.name || 'Card'}" — save manually if you want to keep it.`);
+                    }
+                } catch {
+                    // Normal text paste
+                }
+            }
+        });
+
         function importVaultJSON(event) {
             const file = event.target.files?.[0];
             if (!file) return;
@@ -9485,6 +10308,18 @@
             reader.onload = (e) => {
                 try {
                     const parsed = JSON.parse(e.target.result);
+
+                    // 1. Check if this is a 5e.tools JSON file (do NOT auto-save to Deck; load onto active editor)
+                    if (!isCauldronBackupJSON(parsed)) {
+                        const target = extract5eToolsTarget(parsed);
+                        if (target && load5eToolsDataOntoActiveCard(target)) {
+                            toggleVaultModal(false);
+                            showToast("5e.tools Card Loaded!", `Loaded "${target.entry.name || 'Card'}" onto editor (not saved to Deck yet).`);
+                            return;
+                        }
+                    }
+
+                    // 2. Otherwise import Cauldron of Cards Deck JSON backup as normal
                     if (Array.isArray(parsed)) {
                         saveVaultItems([...parsed, ...getVaultItems()]);
                     } else if (parsed && Array.isArray(parsed.cards)) {
@@ -9503,7 +10338,9 @@
                     renderVaultList();
                     showToast("Deck Imported!", "Restored cards and folders into your Deck of Holding.");
                 } catch {
-                    showToast("Import Failed", "Invalid JSON deck file.");
+                    showToast("Import Failed", "Invalid JSON file.");
+                } finally {
+                    if (event && event.target) event.target.value = '';
                 }
             };
             reader.readAsText(file);
