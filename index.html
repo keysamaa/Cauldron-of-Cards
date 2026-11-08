@@ -1489,10 +1489,10 @@
 <body class="min-h-dvh lg:h-dvh lg:max-h-dvh flex flex-col pb-24 lg:pb-0 overflow-x-hidden lg:overflow-hidden selection:bg-amber-500/30 selection:text-amber-200">
 
     <!-- landing hub -->
-    <div id="landingHub" onclick="handleLandingHubClick(event)" class="intro-playing fixed inset-0 z-50 bg-[#080a0f] overflow-y-auto flex flex-col justify-between p-4 sm:p-8 select-none">
+    <div id="landingHub" onclick="handleLandingHubClick(event)" class="intro-playing fixed inset-0 w-full max-w-full z-50 bg-[#080a0f] overflow-y-auto overflow-x-hidden flex flex-col justify-between p-4 sm:p-8 select-none">
         <div class="max-w-5xl w-full mx-auto mt-2 sm:mt-6 mb-auto py-4 sm:py-6 flex flex-col items-center">
-            <div class="landing-hero-box text-center max-w-2xl mx-auto mb-6 sm:mb-8 relative z-20">
-                <div class="pointer-events-none absolute -inset-x-16 -inset-y-10 bg-[radial-gradient(ellipse_at_center,rgba(245,158,11,0.18)_0%,rgba(139,92,246,0.08)_45%,transparent_75%)] blur-2xl -z-10"></div>
+            <div class="landing-hero-box text-center max-w-2xl w-full mx-auto mb-6 sm:mb-8 relative z-20">
+                <div class="pointer-events-none absolute -inset-x-4 sm:-inset-x-16 -inset-y-10 bg-[radial-gradient(ellipse_at_center,rgba(245,158,11,0.18)_0%,rgba(139,92,246,0.08)_45%,transparent_75%)] blur-2xl -z-10"></div>
                 <div id="introTitleWrap">
                     <h1 class="font-5e-title text-3xl sm:text-5xl md:text-6xl font-black tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-amber-200 via-amber-400 to-amber-200 drop-shadow-[0_4px_24px_rgba(245,158,11,0.25)]">
                         Cauldron of Cards
@@ -1503,7 +1503,7 @@
                         <p class="font-5e-body italic text-base sm:text-xl text-amber-100/80 group-hover/tagline:text-amber-200 tracking-wide transition-colors">
                             Stir thy pots — defy the gods.
                         </p>
-                        <div class="pointer-events-none opacity-0 translate-y-1 scale-95 group-hover/tagline:opacity-100 group-hover/tagline:translate-y-0 group-hover/tagline:scale-100 transition-all duration-200 ease-out absolute top-full mt-2 z-50 w-72 sm:w-80 px-3.5 py-2.5 rounded-xl bg-[#0e121d]/95 border border-amber-500/40 text-[11px] sm:text-xs font-sans not-italic leading-relaxed text-amber-100/95 shadow-[0_14px_34px_rgba(0,0,0,0.85)] backdrop-blur-md text-center">
+                        <div class="pointer-events-none opacity-0 translate-y-1 scale-95 group-hover/tagline:opacity-100 group-hover/tagline:translate-y-0 group-hover/tagline:scale-100 transition-all duration-200 ease-out absolute top-full mt-2 z-50 w-72 sm:w-80 max-w-[calc(100vw-2rem)] px-3.5 py-2.5 rounded-xl bg-[#0e121d]/95 border border-amber-500/40 text-[11px] sm:text-xs font-sans not-italic leading-relaxed text-amber-100/95 shadow-[0_14px_34px_rgba(0,0,0,0.85)] backdrop-blur-md text-center">
                             <span class="absolute -top-1.5 left-1/2 -translate-x-1/2 w-2.5 h-2.5 rotate-45 bg-[#0e121d] border-l border-t border-amber-500/40"></span>
                             by <em class="italic font-semibold text-amber-300">gods</em> I mean WOTC, and by <em class="italic font-semibold text-amber-300">defy</em> I mean, like, having D&amp;D contents in cards and not the default book format and, uhh, stuff. WOTC don't sue me I'm poor. thx.
                         </div>
@@ -1575,6 +1575,7 @@
             <div id="stylePresetsPane" class="flex-1 flex flex-col min-h-0 overflow-hidden">
                 <div class="px-4 py-2.5 bg-[#0e121b] border-b border-slate-800/80 flex items-center gap-1.5 overflow-x-auto no-scrollbar shrink-0">
                     <button type="button" id="styleCat-all" onclick="filterStyleGallery('all')" class="btn-press px-3 py-1 rounded-full text-xs font-bold bg-amber-500/25 text-amber-300 border border-amber-500/50 shrink-0">All Styles (100)</button>
+                    <button type="button" id="styleCat-custom" onclick="filterStyleGallery('custom')" class="btn-press px-3 py-1 rounded-full text-xs font-semibold bg-slate-900 text-amber-300/90 border border-amber-500/30 shrink-0">My Styles (0)</button>
                     <button type="button" id="styleCat-classic" onclick="filterStyleGallery('classic')" class="btn-press px-3 py-1 rounded-full text-xs font-semibold bg-slate-900 text-slate-400 border border-slate-800 shrink-0">Classic & Book (21)</button>
                     <button type="button" id="styleCat-fantasy" onclick="filterStyleGallery('fantasy')" class="btn-press px-3 py-1 rounded-full text-xs font-semibold bg-slate-900 text-slate-400 border border-slate-800 shrink-0">High Fantasy (26)</button>
                     <button type="button" id="styleCat-dark" onclick="filterStyleGallery('dark')" class="btn-press px-3 py-1 rounded-full text-xs font-semibold bg-slate-900 text-slate-400 border border-slate-800 shrink-0">Dark & Eldritch (20)</button>
@@ -1601,6 +1602,18 @@
                     <button type="button" onclick="resetMixAndMatch()" class="btn-press px-3 py-1.5 rounded-lg bg-slate-900 hover:bg-red-950/60 text-slate-200 hover:text-red-200 border border-slate-700 text-xs font-semibold shrink-0 flex items-center gap-1.5">
                         <i data-lucide="rotate-ccw" class="w-3.5 h-3.5"></i>
                         <span>Reset All Overrides</span>
+                    </button>
+                </div>
+
+                <!-- SAVE CUSTOM STYLE TO BROWSER STORAGE BAR -->
+                <div class="p-3 rounded-xl bg-[#0d111a] border border-amber-500/30 flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+                    <div class="flex items-center gap-2 flex-1 min-w-0">
+                        <i data-lucide="bookmark-plus" class="w-4 h-4 text-amber-400 shrink-0"></i>
+                        <input type="text" id="customStyleNameInput" onkeydown="if(event.key === 'Enter'){ event.preventDefault(); saveCustomStyleToStorage(); }" placeholder="Name your custom style (e.g., Astral Boss, Blood Scroll)..." class="w-full px-3 py-1.5 rounded-lg bg-[#080a0f] border border-slate-700 focus:border-amber-500 focus:outline-none text-xs text-slate-100">
+                    </div>
+                    <button type="button" onclick="saveCustomStyleToStorage()" class="btn-press px-3.5 py-1.5 rounded-lg bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs shrink-0 flex items-center justify-center gap-1.5 shadow-sm">
+                        <i data-lucide="save" class="w-3.5 h-3.5"></i>
+                        <span>Save Custom Style</span>
                     </button>
                 </div>
 
@@ -4627,22 +4640,26 @@
         function toggleArtFlip(axis) {
             if (axis === 'x') {
                 artFlipX = !artFlipX;
-                const btnX = document.getElementById('btnFlipArtX');
-                if (btnX) {
-                    btnX.className = artFlipX
-                        ? "btn-press py-1.5 px-2 rounded bg-amber-500/25 border border-amber-500/60 text-[11px] text-amber-300 font-bold flex items-center justify-center gap-1"
-                        : "btn-press py-1.5 px-2 rounded bg-[#121622] border border-slate-700 text-[11px] text-slate-300 font-medium flex items-center justify-center gap-1";
-                }
             } else if (axis === 'y') {
                 artFlipY = !artFlipY;
-                const btnY = document.getElementById('btnFlipArtY');
-                if (btnY) {
-                    btnY.className = artFlipY
-                        ? "btn-press py-1.5 px-2 rounded bg-amber-500/25 border border-amber-500/60 text-[11px] text-amber-300 font-bold flex items-center justify-center gap-1"
-                        : "btn-press py-1.5 px-2 rounded bg-[#121622] border border-slate-700 text-[11px] text-slate-300 font-medium flex items-center justify-center gap-1";
-                }
             }
+            syncArtFlipButtonsUI();
             renderCard();
+        }
+
+        function syncArtFlipButtonsUI() {
+            const btnX = document.getElementById('btnFlipArtX');
+            const btnY = document.getElementById('btnFlipArtY');
+            if (btnX) {
+                btnX.className = artFlipX
+                    ? "btn-press py-1.5 px-2 rounded bg-amber-500/25 border border-amber-500/60 text-[11px] text-amber-300 font-bold flex items-center justify-center gap-1"
+                    : "btn-press py-1.5 px-2 rounded bg-[#121622] border border-slate-700 text-[11px] text-slate-300 font-medium flex items-center justify-center gap-1";
+            }
+            if (btnY) {
+                btnY.className = artFlipY
+                    ? "btn-press py-1.5 px-2 rounded bg-amber-500/25 border border-amber-500/60 text-[11px] text-amber-300 font-bold flex items-center justify-center gap-1"
+                    : "btn-press py-1.5 px-2 rounded bg-[#121622] border border-slate-700 text-[11px] text-slate-300 font-medium flex items-center justify-center gap-1";
+            }
         }
 
         function stepArtRotate(delta) {
@@ -4666,10 +4683,7 @@
             if (posYEl) posYEl.value = 0;
             artFlipX = false;
             artFlipY = false;
-            const btnX = document.getElementById('btnFlipArtX');
-            const btnY = document.getElementById('btnFlipArtY');
-            if (btnX) btnX.className = "btn-press py-1.5 px-2 rounded bg-[#121622] border border-slate-700 text-[11px] text-slate-300 font-medium flex items-center justify-center gap-1";
-            if (btnY) btnY.className = "btn-press py-1.5 px-2 rounded bg-[#121622] border border-slate-700 text-[11px] text-slate-300 font-medium flex items-center justify-center gap-1";
+            syncArtFlipButtonsUI();
             renderCard();
         }
 
@@ -5473,6 +5487,7 @@
         window.addEventListener('DOMContentLoaded', () => {
             populateTenFontSizeSelects();
             renderCategoryCardsHTML();
+            updateCustomStylesCountUI();
             renderStyleGalleryHTML('all');
             initArtGestureSurfaces();
             initDraggableFloatingPreviewBtn();
@@ -6177,7 +6192,9 @@
             { key: 'clearlight', name: 'Transparent (Light Ink)', cat: 'print', bg: 'transparent', text: '#F6D88C', border: '#F6D88C', rule: '#F6D88C', bookends: false, corners: false }
         ];
 
+        const CUSTOM_STYLES_STORAGE_KEY = 'cauldron_custom_styles_v1';
         let currentStyleCategoryFilter = 'all';
+        let activeCustomStyleId = null;
         let mixAndMatchState = {
             titleFont: 'preset',
             bodyFont: 'preset',
@@ -6204,9 +6221,115 @@
             scribbles: 'preset'
         };
 
+        function getSavedCustomStyles() {
+            try {
+                const raw = JSON.parse(localStorage.getItem(CUSTOM_STYLES_STORAGE_KEY) || '[]');
+                return Array.isArray(raw) ? raw : [];
+            } catch {
+                return [];
+            }
+        }
+
+        function saveCustomStylesList(list) {
+            localStorage.setItem(CUSTOM_STYLES_STORAGE_KEY, JSON.stringify(list));
+            updateCustomStylesCountUI();
+        }
+
+        function updateCustomStylesCountUI() {
+            const count = getSavedCustomStyles().length;
+            const btn = document.getElementById('styleCat-custom');
+            if (btn) btn.textContent = `My Styles (${count})`;
+        }
+
+        function computeCustomStyleSwatchMeta(baseKey, mm) {
+            const base = STYLE_GALLERY_LIST.find(s => s.key === baseKey) || STYLE_GALLERY_LIST[0];
+            let bg = base.bg;
+            if (mm.bgMode === 'transparent') {
+                bg = 'transparent';
+            } else if (mm.bgMode === 'solid') {
+                bg = mm.bgColor1 || base.bg;
+            } else if (mm.bgMode === 'gradient') {
+                bg = mm.bgGradDir === 'radial'
+                    ? `radial-gradient(circle at center, ${mm.bgColor1} 0%, ${mm.bgColor2} 100%)`
+                    : `linear-gradient(${mm.bgGradDir || '160deg'}, ${mm.bgColor1} 0%, ${mm.bgColor2} 100%)`;
+            } else if (mm.bgMode === 'borrow') {
+                const borrowed = STYLE_GALLERY_LIST.find(s => s.key === mm.borrowBgStyle);
+                if (borrowed) bg = borrowed.bg;
+            }
+            return {
+                bg,
+                text: mm.useTitleColor ? mm.titleColor : base.text,
+                border: mm.useBorderColor ? mm.borderColor : base.border,
+                rule: mm.useRuleColor ? mm.ruleColor : base.rule,
+                titleFont: mm.titleFont && mm.titleFont !== 'preset' ? mm.titleFont : "'Cinzel', serif"
+            };
+        }
+
+        function saveCustomStyleToStorage() {
+            const input = document.getElementById('customStyleNameInput');
+            const rawName = (input?.value || '').trim();
+            const baseMeta = STYLE_GALLERY_LIST.find(s => s.key === currentTheme) || STYLE_GALLERY_LIST[0];
+            const styleName = rawName || `Custom ${baseMeta.name}`;
+
+            const styles = getSavedCustomStyles();
+            const newStyle = {
+                id: 'cstyle_' + Date.now(),
+                name: styleName,
+                baseTheme: currentTheme,
+                mixAndMatch: JSON.parse(JSON.stringify(mixAndMatchState))
+            };
+            styles.unshift(newStyle);
+            saveCustomStylesList(styles);
+            activeCustomStyleId = newStyle.id;
+
+            const btnLbl = document.getElementById('activeStyleBtnLabel');
+            if (btnLbl) btnLbl.textContent = styleName;
+            if (input) input.value = '';
+
+            renderStyleGalleryHTML(currentStyleCategoryFilter);
+            showToast("Custom Style Saved!", `Added "${styleName}" to My Styles.`);
+        }
+
+        function applySavedCustomStyle(styleId) {
+            const styles = getSavedCustomStyles();
+            const target = styles.find(s => String(s.id) === String(styleId));
+            if (!target) return;
+
+            activeCustomStyleId = target.id;
+            const meta = STYLE_GALLERY_LIST.find(s => s.key === target.baseTheme) || STYLE_GALLERY_LIST[0];
+            currentTheme = meta.key;
+            mixAndMatchState = { ...mixAndMatchState, ...JSON.parse(JSON.stringify(target.mixAndMatch || {})) };
+
+            const btnLbl = document.getElementById('activeStyleBtnLabel');
+            if (btnLbl) btnLbl.textContent = target.name;
+
+            syncMixMatchUIFromState();
+            rebuildMixAndMatchCSS();
+            renderStyleGalleryHTML(currentStyleCategoryFilter);
+            triggerCardSwapAnimation();
+            renderCard();
+        }
+
+        function deleteSavedCustomStyle(styleId, event) {
+            if (event) event.stopPropagation();
+            const styles = getSavedCustomStyles();
+            const target = styles.find(s => String(s.id) === String(styleId));
+            const updated = styles.filter(s => String(s.id) !== String(styleId));
+            saveCustomStylesList(updated);
+            if (activeCustomStyleId === styleId) {
+                activeCustomStyleId = null;
+                const meta = STYLE_GALLERY_LIST.find(s => s.key === currentTheme) || STYLE_GALLERY_LIST[0];
+                const btnLbl = document.getElementById('activeStyleBtnLabel');
+                if (btnLbl) btnLbl.textContent = meta.name;
+            }
+            renderStyleGalleryHTML(currentStyleCategoryFilter);
+            if (target) showToast("Style Removed", `Deleted "${target.name}".`);
+        }
+
         function openStylePickerModal() {
             closeAllMobileDrawers('styles');
             populateBorrowBgDropdown();
+            updateCustomStylesCountUI();
             renderStyleGalleryHTML(currentStyleCategoryFilter);
             syncMixMatchUIFromState();
             const modal = document.getElementById('stylePickerModal');
@@ -6242,28 +6365,73 @@
 
         function filterStyleGallery(cat) {
             currentStyleCategoryFilter = cat;
-            const cats = ['all', 'classic', 'fantasy', 'dark', 'cute', 'print'];
+            const cats = ['all', 'custom', 'classic', 'fantasy', 'dark', 'cute', 'print'];
             cats.forEach(c => {
                 const btn = document.getElementById(`styleCat-${c}`);
                 if (!btn) return;
                 if (c === cat) {
                     btn.className = "btn-press px-3 py-1 rounded-full text-xs font-bold bg-amber-500/25 text-amber-300 border border-amber-500/50 shrink-0";
+                } else if (c === 'custom') {
+                    btn.className = "btn-press px-3 py-1 rounded-full text-xs font-semibold bg-slate-900 text-amber-300/90 border border-amber-500/30 shrink-0";
                 } else {
                     btn.className = "btn-press px-3 py-1 rounded-full text-xs font-semibold bg-slate-900 text-slate-400 border border-slate-800 shrink-0";
                 }
             });
+            updateCustomStylesCountUI();
             renderStyleGalleryHTML(cat);
         }
 
         function renderStyleGalleryHTML(catFilter = 'all') {
             const grid = document.getElementById('styleGalleryGrid');
             if (!grid) return;
+            updateCustomStylesCountUI();
+
+            const savedCustom = getSavedCustomStyles();
+            const customTilesHTML = (catFilter === 'all' || catFilter === 'custom')
+                ? savedCustom.map(cs => {
+                    const isSelected = activeCustomStyleId === cs.id;
+                    const sw = computeCustomStyleSwatchMeta(cs.baseTheme, cs.mixAndMatch || {});
+                    const swatchBg = sw.bg === 'transparent'
+                        ? 'repeating-conic-gradient(#1e293b 0% 25%, #0f172a 0% 50%) 0 0 / 12px 12px'
+                        : sw.bg;
+                    return `
+                        <div onclick="applySavedCustomStyle('${cs.id}')" class="style-tile-card cursor-pointer text-left p-2.5 rounded-xl bg-[#0d111a] border ${isSelected ? 'border-amber-400 ring-2 ring-amber-400/30' : 'border-amber-500/35 hover:border-amber-400'} flex flex-col gap-2 relative group">
+                            <div class="w-full h-11 rounded-lg flex flex-col justify-between p-2 overflow-hidden relative" style="background: ${swatchBg}; border: 2px solid ${sw.border};">
+                                <div class="flex items-center justify-between gap-1">
+                                    <div class="text-[11px] font-bold truncate leading-none" style="color: ${sw.text}; font-family: ${sw.titleFont};">${escapeHtmlText(cs.name)}</div>
+                                    <span class="px-1 py-0.2 rounded bg-black/55 text-[8px] font-bold uppercase tracking-wider text-amber-300 shrink-0">Custom</span>
+                                </div>
+                                <div class="w-3/4 h-[2px] rounded-full" style="background: ${sw.rule};"></div>
+                            </div>
+                            <div class="flex items-center justify-between gap-1 px-0.5">
+                                <span class="text-xs font-semibold ${isSelected ? 'text-amber-300' : 'text-amber-100'} truncate">${escapeHtmlText(cs.name)}</span>
+                                <button type="button" onclick="deleteSavedCustomStyle('${cs.id}', event)" class="px-1.5 py-0.2 rounded bg-slate-800/90 hover:bg-red-950/80 text-slate-400 hover:text-red-300 border border-slate-700 text-[10px] font-bold shrink-0" title="Delete custom style">×</button>
+                            </div>
+                        </div>
+                    `;
+                }).join('')
+                : '';
+
+            if (catFilter === 'custom') {
+                if (savedCustom.length === 0) {
+                    grid.innerHTML = `
+                        <div class="col-span-full text-center py-10 px-4 space-y-2.5">
+                            <p class="text-sm font-semibold text-slate-300">No saved custom styles yet.</p>
+                            <p class="text-xs text-slate-500">Open the Customize Card Style studio above to mix fonts, colors, backgrounds, and borders, then click "Save Custom Style".</p>
+                        </div>
+                    `;
+                } else {
+                    grid.innerHTML = customTilesHTML;
+                }
+                return;
+            }
+
             const filtered = catFilter === 'all'
                 ? STYLE_GALLERY_LIST
                 : STYLE_GALLERY_LIST.filter(s => s.cat === catFilter);
 
-            grid.innerHTML = filtered.map(s => {
-                const isSelected = currentTheme === s.key;
+            const presetTilesHTML = filtered.map(s => {
+                const isSelected = !activeCustomStyleId && currentTheme === s.key;
                 const swatchBg = s.bg === 'transparent'
                     ? 'repeating-conic-gradient(#1e293b 0% 25%, #0f172a 0% 50%) 0 0 / 12px 12px'
                     : s.bg;
@@ -6280,6 +6448,8 @@
                     </button>
                 `;
             }).join('');
+
+            grid.innerHTML = customTilesHTML + presetTilesHTML;
         }
 
         function populateBorrowBgDropdown() {
@@ -6471,6 +6641,7 @@
         }
 
         function selectCardTheme(themeKey) {
+            activeCustomStyleId = null;
             const meta = STYLE_GALLERY_LIST.find(s => s.key === themeKey) || STYLE_GALLERY_LIST[0];
             currentTheme = meta.key;
             const btnLbl = document.getElementById('activeStyleBtnLabel');
@@ -9189,10 +9360,49 @@
             renderVaultList();
         }
 
+        function getStorageReadyArtSource() {
+            if (!currentArtIsCustomImg || !rawCustomImageSource) return '';
+            if (!rawCustomImageSource.startsWith('data:')) {
+                return rawCustomImageSource;
+            }
+            try {
+                const padImg = document.getElementById('artGesturePadImg');
+                if (padImg && padImg.complete && padImg.naturalWidth > 0 && padImg.naturalHeight > 0) {
+                    const maxDim = 1000;
+                    let w = padImg.naturalWidth;
+                    let h = padImg.naturalHeight;
+                    if (w > maxDim || h > maxDim) {
+                        if (w >= h) {
+                            h = Math.round((h * maxDim) / w);
+                            w = maxDim;
+                        } else {
+                            w = Math.round((w * maxDim) / h);
+                            h = maxDim;
+                        }
+                    }
+                    const c = document.createElement('canvas');
+                    c.width = w;
+                    c.height = h;
+                    const ctx = c.getContext('2d');
+                    ctx.drawImage(padImg, 0, 0, w, h);
+                    const webpUrl = c.toDataURL('image/webp', 0.82);
+                    return webpUrl.length < rawCustomImageSource.length ? webpUrl : rawCustomImageSource;
+                }
+            } catch {
+                // Fallback to original data URL if canvas compression is unavailable
+            }
+            return rawCustomImageSource;
+        }
+
         function captureCurrentCardState() {
             const targetDeckId = (activeVaultDeckFilter !== 'all' && activeVaultDeckFilter !== 'unsorted')
                 ? activeVaultDeckFilter
                 : '';
+
+            const fontSizes = {};
+            document.querySelectorAll('select[id^="fs-"]').forEach(sel => {
+                fontSizes[sel.id] = sel.value || '1';
+            });
 
             return {
                 id: Date.now(),
@@ -9200,7 +9410,10 @@
                 category: currentCategory,
                 ruleEdition: currentRuleEdition,
                 theme: currentTheme,
+                customStyleId: activeCustomStyleId,
+                activeStyleLabel: document.getElementById('activeStyleBtnLabel')?.textContent || '',
                 mixAndMatch: JSON.parse(JSON.stringify(mixAndMatchState)),
+                fontSizes,
                 name: document.getElementById('itemName')?.value || 'Untitled Card',
                 subtitle: document.getElementById('previewSubtitle')?.textContent?.trim() || '',
                 customSubtitle: document.getElementById('customSubtitleInput')?.value || '',
@@ -9222,7 +9435,35 @@
                 extraCustomPills: JSON.parse(JSON.stringify(extraCustomPills)),
                 showCharges: !!document.getElementById('showCharges')?.checked,
                 resourceBars: JSON.parse(JSON.stringify(resourceBars)),
+                mainDetailsSectionOrder: JSON.parse(JSON.stringify(mainDetailsSectionOrder)),
+                monsterStats: {
+                    ac: document.getElementById('monAC')?.value || '',
+                    hp: document.getElementById('monHP')?.value || '',
+                    speed: document.getElementById('monSpeed')?.value || '',
+                    init: document.getElementById('monInit')?.value || '',
+                    str: document.getElementById('monStr')?.value || '10',
+                    dex: document.getElementById('monDex')?.value || '10',
+                    con: document.getElementById('monCon')?.value || '10',
+                    int: document.getElementById('monInt')?.value || '10',
+                    wis: document.getElementById('monWis')?.value || '10',
+                    cha: document.getElementById('monCha')?.value || '10',
+                    saves: document.getElementById('monSaves')?.value || '',
+                    skills: document.getElementById('monSkills')?.value || '',
+                    resist: document.getElementById('monResist')?.value || '',
+                    senses: document.getElementById('monSenses')?.value || '',
+                    langs: document.getElementById('monLangs')?.value || '',
+                    cr: document.getElementById('monCR')?.value || ''
+                },
                 charSheetVitalBoxes: JSON.parse(JSON.stringify(charSheetVitalBoxes)),
+                charSheetLayoutOrder: JSON.parse(JSON.stringify(charSheetLayoutOrder)),
+                charAbilities: {
+                    str: document.getElementById('charStr')?.value || '10',
+                    dex: document.getElementById('charDex')?.value || '10',
+                    con: document.getElementById('charCon')?.value || '10',
+                    int: document.getElementById('charInt')?.value || '10',
+                    wis: document.getElementById('charWis')?.value || '10',
+                    cha: document.getElementById('charCha')?.value || '10'
+                },
                 charACLabel: document.getElementById('charACLabel')?.value || 'Armor Class',
                 charHPLabel: document.getElementById('charHPLabel')?.value || 'Hit Points',
                 charPassiveLabel: document.getElementById('charPassiveLabel')?.value || 'Passive Perception',
@@ -9231,6 +9472,37 @@
                 charHP: document.getElementById('charHP')?.value || '',
                 charPassive: document.getElementById('charPassive')?.value || '',
                 charSpellDC: document.getElementById('charSpellDC')?.value || '',
+                layoutSettings: {
+                    cardSizePreset: document.getElementById('cardSizePreset')?.value || 'auto',
+                    cardOrientation: document.getElementById('cardOrientation')?.value || 'portrait',
+                    cardCornerStyle: document.getElementById('cardCornerStyle')?.value || 'sharp',
+                    cardLayoutWidth: document.getElementById('cardLayoutWidth')?.value || 'single',
+                    includeCardBack: !!document.getElementById('includeCardBack')?.checked,
+                    cardBackRarityMode: document.getElementById('cardBackRarityMode')?.value || 'match',
+                    multiCardSplit: !!document.getElementById('multiCardSplit')?.checked,
+                    mcMainArt: !!document.getElementById('mcMainArt')?.checked,
+                    mcMainTitle: !!document.getElementById('mcMainTitle')?.checked,
+                    mcMainSubtitle: !!document.getElementById('mcMainSubtitle')?.checked,
+                    mcMainFullImage: !!document.getElementById('mcMainFullImage')?.checked,
+                    mcDetailChecks: [...mcDetailChecks]
+                },
+                artSettings: {
+                    artLayout: document.getElementById('artLayout')?.value || 'none',
+                    artScale: document.getElementById('artScaleSlider')?.value || '100',
+                    artRotate: document.getElementById('artRotateSlider')?.value || '0',
+                    artPosX: document.getElementById('artPosXSlider')?.value || '0',
+                    artPosY: document.getElementById('artPosYSlider')?.value || '0',
+                    artFlipX: !!artFlipX,
+                    artFlipY: !!artFlipY,
+                    artFilter: document.getElementById('artFilter')?.value || 'auto',
+                    watercolorEdgeMode: document.getElementById('watercolorEdgeMode')?.value || 'bottom',
+                    artFullBleed: !!document.getElementById('artFullBleed')?.checked,
+                    artAreaSpan: document.getElementById('artAreaSpanSlider')?.value || '42',
+                    artBlendMultiply: !!document.getElementById('artBlendMultiply')?.checked,
+                    artUrl: document.getElementById('artUrl')?.value || '',
+                    hadCustomImage: !!currentArtIsCustomImg
+                },
+                artImageSource: getStorageReadyArtSource(),
                 desc: document.getElementById('itemDesc')?.value || '',
                 flavor: document.getElementById('itemFlavor')?.value || '',
                 flavorBoxStyle: !!document.getElementById('flavorBoxStyle')?.checked,
@@ -9243,13 +9515,30 @@
             const items = getVaultItems();
             const snap = captureCurrentCardState();
             items.unshift(snap);
-            saveVaultItems(items);
+            let strippedImageForQuota = false;
+            try {
+                saveVaultItems(items);
+            } catch (err) {
+                // If browser storage quota is exceeded by an embedded base64 image, keep 100% of artSettings & card state and omit only the raw image bytes
+                snap.artImageSource = '';
+                strippedImageForQuota = true;
+                try {
+                    saveVaultItems(items);
+                } catch {
+                    showToast("Storage Full", "Export a JSON backup or remove old cards to free browser storage.");
+                    return;
+                }
+            }
             if (!document.getElementById('vaultModal')?.classList.contains('hidden')) {
                 renderVaultList();
             }
             const decks = getVaultDecks();
             const deckObj = decks.find(d => d.id === snap.deckId);
-            showToast("Saved to Deck!", deckObj ? `Added "${snap.name}" to ${deckObj.name}.` : `Added "${snap.name}" to your Deck of Holding.`);
+            if (strippedImageForQuota) {
+                showToast("Card & Image Settings Saved!", "Storage full for raw image file — re-upload image anytime to snap into saved position.");
+            } else {
+                showToast("Saved to Deck!", deckObj ? `Added "${snap.name}" to ${deckObj.name}.` : `Added "${snap.name}" to your Deck of Holding.`);
+            }
         }
 
         function renderVaultList() {
@@ -9390,6 +9679,19 @@
                 syncMixMatchUIFromState();
                 rebuildMixAndMatchCSS();
             }
+            if (item.customStyleId) {
+                activeCustomStyleId = item.customStyleId;
+                const btnLbl = document.getElementById('activeStyleBtnLabel');
+                if (btnLbl && item.activeStyleLabel) btnLbl.textContent = item.activeStyleLabel;
+            }
+
+            // Restore all font size dropdowns
+            if (item.fontSizes && typeof item.fontSizes === 'object') {
+                Object.entries(item.fontSizes).forEach(([selId, val]) => {
+                    const sel = document.getElementById(selId);
+                    if (sel && val !== undefined) sel.value = String(val);
+                });
+            }
 
             document.getElementById('itemName').value = item.name || '';
             if (item.customSubtitle !== undefined) document.getElementById('customSubtitleInput').value = item.customSubtitle;
@@ -9430,6 +9732,33 @@
             }
             renderResourceBarsEditor();
 
+            if (Array.isArray(item.mainDetailsSectionOrder) && item.mainDetailsSectionOrder.length > 0) {
+                mainDetailsSectionOrder = JSON.parse(JSON.stringify(item.mainDetailsSectionOrder));
+                syncMainDetailsGroupDOMOrder();
+            }
+
+            // Restore Creature Stat Block fields
+            if (item.monsterStats && typeof item.monsterStats === 'object') {
+                const ms = item.monsterStats;
+                const setIf = (elId, v) => { const el = document.getElementById(elId); if (el && v !== undefined) el.value = v; };
+                setIf('monAC', ms.ac);
+                setIf('monHP', ms.hp);
+                setIf('monSpeed', ms.speed);
+                setIf('monInit', ms.init);
+                setIf('monStr', ms.str);
+                setIf('monDex', ms.dex);
+                setIf('monCon', ms.con);
+                setIf('monInt', ms.int);
+                setIf('monWis', ms.wis);
+                setIf('monCha', ms.cha);
+                setIf('monSaves', ms.saves);
+                setIf('monSkills', ms.skills);
+                setIf('monResist', ms.resist);
+                setIf('monSenses', ms.senses);
+                setIf('monLangs', ms.langs);
+                setIf('monCR', ms.cr);
+            }
+
             document.getElementById('itemDesc').value = item.desc || '';
             document.getElementById('itemFlavor').value = item.flavor || '';
             document.getElementById('flavorBoxStyle').checked = item.flavorBoxStyle !== false;
@@ -9453,12 +9782,90 @@
                 ];
                 renderCharVitalsEditor();
             }
+            if (Array.isArray(item.charSheetLayoutOrder) && item.charSheetLayoutOrder.length > 0) {
+                charSheetLayoutOrder = JSON.parse(JSON.stringify(item.charSheetLayoutOrder));
+                renderCharSheetOrderEditor();
+            }
+            if (item.charAbilities && typeof item.charAbilities === 'object') {
+                const ca = item.charAbilities;
+                if (ca.str !== undefined && document.getElementById('charStr')) document.getElementById('charStr').value = ca.str;
+                if (ca.dex !== undefined && document.getElementById('charDex')) document.getElementById('charDex').value = ca.dex;
+                if (ca.con !== undefined && document.getElementById('charCon')) document.getElementById('charCon').value = ca.con;
+                if (ca.int !== undefined && document.getElementById('charInt')) document.getElementById('charInt').value = ca.int;
+                if (ca.wis !== undefined && document.getElementById('charWis')) document.getElementById('charWis').value = ca.wis;
+                if (ca.cha !== undefined && document.getElementById('charCha')) document.getElementById('charCha').value = ca.cha;
+            }
+
+            // Restore Card Size, Orientation, Columns, Card-Back & Multi-Card Checklist
+            if (item.layoutSettings && typeof item.layoutSettings === 'object') {
+                const ls = item.layoutSettings;
+                if (ls.cardSizePreset && document.getElementById('cardSizePreset')) document.getElementById('cardSizePreset').value = ls.cardSizePreset;
+                if (ls.cardOrientation && document.getElementById('cardOrientation')) document.getElementById('cardOrientation').value = ls.cardOrientation;
+                if (ls.cardCornerStyle && document.getElementById('cardCornerStyle')) document.getElementById('cardCornerStyle').value = ls.cardCornerStyle;
+                if (ls.cardLayoutWidth && document.getElementById('cardLayoutWidth')) document.getElementById('cardLayoutWidth').value = ls.cardLayoutWidth;
+                if (document.getElementById('includeCardBack')) document.getElementById('includeCardBack').checked = !!ls.includeCardBack;
+                if (ls.cardBackRarityMode && document.getElementById('cardBackRarityMode')) document.getElementById('cardBackRarityMode').value = ls.cardBackRarityMode;
+                if (document.getElementById('multiCardSplit')) document.getElementById('multiCardSplit').checked = ls.multiCardSplit !== false;
+                if (document.getElementById('mcMainArt')) document.getElementById('mcMainArt').checked = !!ls.mcMainArt;
+                if (document.getElementById('mcMainTitle')) document.getElementById('mcMainTitle').checked = !!ls.mcMainTitle;
+                if (document.getElementById('mcMainSubtitle')) document.getElementById('mcMainSubtitle').checked = !!ls.mcMainSubtitle;
+                if (document.getElementById('mcMainFullImage')) document.getElementById('mcMainFullImage').checked = !!ls.mcMainFullImage;
+                if (Array.isArray(ls.mcDetailChecks)) {
+                    mcDetailChecks = [...ls.mcDetailChecks];
+                    lastRenderedDetailSegmentCount = -1;
+                    syncDynamicDetailCheckboxesUI(mcDetailChecks.length);
+                }
+            }
+
+            // Restore Artwork Transform, Placement, Watercolor Edge & Image Source
+            if (item.artSettings && typeof item.artSettings === 'object') {
+                const as = item.artSettings;
+                if (as.artLayout && document.getElementById('artLayout')) document.getElementById('artLayout').value = as.artLayout;
+                if (as.artScale !== undefined && document.getElementById('artScaleSlider')) document.getElementById('artScaleSlider').value = as.artScale;
+                if (as.artRotate !== undefined && document.getElementById('artRotateSlider')) document.getElementById('artRotateSlider').value = as.artRotate;
+                if (as.artPosX !== undefined && document.getElementById('artPosXSlider')) document.getElementById('artPosXSlider').value = as.artPosX;
+                if (as.artPosY !== undefined && document.getElementById('artPosYSlider')) document.getElementById('artPosYSlider').value = as.artPosY;
+                artFlipX = !!as.artFlipX;
+                artFlipY = !!as.artFlipY;
+                syncArtFlipButtonsUI();
+                if (as.artFilter && document.getElementById('artFilter')) document.getElementById('artFilter').value = as.artFilter;
+                if (as.watercolorEdgeMode && document.getElementById('watercolorEdgeMode')) document.getElementById('watercolorEdgeMode').value = as.watercolorEdgeMode;
+                if (document.getElementById('artFullBleed')) document.getElementById('artFullBleed').checked = !!as.artFullBleed;
+                if (as.artAreaSpan !== undefined && document.getElementById('artAreaSpanSlider')) document.getElementById('artAreaSpanSlider').value = as.artAreaSpan;
+                if (document.getElementById('artBlendMultiply')) document.getElementById('artBlendMultiply').checked = !!as.artBlendMultiply;
+                if (as.artUrl !== undefined && document.getElementById('artUrl')) document.getElementById('artUrl').value = as.artUrl;
+            }
+
+            if (item.artImageSource) {
+                rawCustomImageSource = item.artImageSource;
+                currentArtSource = item.artImageSource;
+                currentArtIsCustomImg = true;
+                cachedRawImageEl = null;
+                cachedMaskKey = '';
+            } else if (item.artSettings?.artUrl) {
+                rawCustomImageSource = item.artSettings.artUrl;
+                currentArtSource = item.artSettings.artUrl;
+                currentArtIsCustomImg = true;
+                cachedRawImageEl = null;
+                cachedMaskKey = '';
+            } else {
+                rawCustomImageSource = null;
+                currentArtSource = '';
+                currentArtIsCustomImg = false;
+            }
+
             if (item.footerSource !== undefined) document.getElementById('footerSource').value = item.footerSource;
             if (item.footerCategory !== undefined) document.getElementById('footerCategoryInput').value = item.footerCategory;
 
+            syncMiniLayoutControls('main');
+            updateCardSizeAndLayout();
             toggleVaultModal(false);
             renderCard();
-            showToast("Card Loaded!", `Restored "${item.name}".`);
+            if (item.artSettings?.hadCustomImage && !currentArtIsCustomImg) {
+                showToast("Card & Image Settings Loaded!", `Re-upload your image for "${item.name}" — your exact placement & zoom are ready.`);
+            } else {
+                showToast("Card Loaded!", `Restored "${item.name}".`);
+            }
         }
 
         function deleteVaultItem(id) {
@@ -9471,6 +9878,7 @@
             const payload = {
                 version: 2,
                 decks: getVaultDecks(),
+                customStyles: getSavedCustomStyles(),
                 cards: getVaultItems()
             };
             const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
@@ -9482,7 +9890,7 @@
             a.click();
             document.body.removeChild(a);
             URL.revokeObjectURL(url);
-            showToast("Deck Exported", "Saved JSON backup of your cards and folders.");
+            showToast("Deck Exported", "Saved JSON backup of your cards, folders, and custom styles.");
         }
 
         // --- secret 5e.tools json translator (loads onto active editor without auto-saving to deck) ---
@@ -10340,10 +10748,20 @@
                             });
                             saveVaultDecks(mergedDecks);
                         }
+                        if (Array.isArray(parsed.customStyles)) {
+                            const existingStyles = getSavedCustomStyles();
+                            const mergedStyles = [...existingStyles];
+                            parsed.customStyles.forEach(cs => {
+                                if (cs && cs.id && !mergedStyles.some(es => es.id === cs.id)) {
+                                    mergedStyles.push(cs);
+                                }
+                            });
+                            saveCustomStylesList(mergedStyles);
+                        }
                         saveVaultItems([...parsed.cards, ...getVaultItems()]);
                     }
                     renderVaultList();
-                    showToast("Deck Imported!", "Restored cards and folders into your Deck of Holding.");
+                    showToast("Deck Imported!", "Restored cards, folders, and custom styles into your Deck of Holding.");
                 } catch {
                     showToast("Import Failed", "Invalid JSON file.");
                 } finally {
